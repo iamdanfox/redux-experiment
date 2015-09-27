@@ -52,8 +52,17 @@ function setTo7() {
 
 // UI
 
-class Counter extends React.Component {
-  render() {
+const Counter = React.createClass({
+  propTypes: {
+    increment: React.PropTypes.func.isRequired,
+    incrementIfOdd: React.PropTypes.func.isRequired,
+    incrementAsync: React.PropTypes.func.isRequired,
+    decrement: React.PropTypes.func.isRequired,
+    setTo7: React.PropTypes.func.isRequired,
+    counter: React.PropTypes.number.isRequired
+  },
+
+  render: function() {
     const { increment, incrementIfOdd, incrementAsync, decrement, setTo7, counter } = this.props;
     return (
       <p>
@@ -71,16 +80,7 @@ class Counter extends React.Component {
       </p>
     );
   }
-}
-
-Counter.propTypes = {
-  increment: React.PropTypes.func.isRequired,
-  incrementIfOdd: React.PropTypes.func.isRequired,
-  incrementAsync: React.PropTypes.func.isRequired,
-  decrement: React.PropTypes.func.isRequired,
-  setTo7: React.PropTypes.func.isRequired,
-  counter: React.PropTypes.number.isRequired
-};
+});
 
 function mapStateToProps(state) {
   return {
