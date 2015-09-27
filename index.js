@@ -1,12 +1,16 @@
-import React, { Component, PropTypes } from 'react';
+import React from 'react';
 import { Provider, connect } from 'react-redux';
 import { createStore, applyMiddleware, combineReducers, bindActionCreators } from 'redux';
 import thunk from 'redux-thunk';
 
 
+// ACTIONS
+
 const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
 const DECREMENT_COUNTER = 'DECREMENT_COUNTER';
 const SET_TO_7 = 'SET_TO_7';
+
+// ACTION CREATORS
 
 function increment() {
   return {
@@ -47,11 +51,9 @@ function setTo7() {
   };
 }
 
+// UI
 
-
-
-
-class Counter extends Component {
+class Counter extends React.Component {
   render() {
     const { increment, incrementIfOdd, incrementAsync, decrement, setTo7, counter } = this.props;
     return (
@@ -73,15 +75,13 @@ class Counter extends Component {
 }
 
 Counter.propTypes = {
-  increment: PropTypes.func.isRequired,
-  incrementIfOdd: PropTypes.func.isRequired,
-  incrementAsync: PropTypes.func.isRequired,
-  decrement: PropTypes.func.isRequired,
-  setTo7: PropTypes.func.isRequired,
-  counter: PropTypes.number.isRequired
+  increment: React.PropTypes.func.isRequired,
+  incrementIfOdd: React.PropTypes.func.isRequired,
+  incrementAsync: React.PropTypes.func.isRequired,
+  decrement: React.PropTypes.func.isRequired,
+  setTo7: React.PropTypes.func.isRequired,
+  counter: React.PropTypes.number.isRequired
 };
-
-
 
 function mapStateToProps(state) {
   return {
@@ -95,10 +95,7 @@ function mapDispatchToProps(dispatch) {
 
 const App = connect(mapStateToProps, mapDispatchToProps)(Counter);
 
-
-
-
-
+// REDUCERS
 
 function counter(state = 0, action) {
   switch (action.type) {
@@ -118,16 +115,13 @@ const rootReducer = combineReducers({
 });
 
 
-
-
-
-
-
 const createStoreWithMiddleware = applyMiddleware(
   thunk
 )(createStore);
 
 const store = createStoreWithMiddleware(rootReducer);
+
+// INITIALISATION
 
 React.render(
   <Provider store={store}>
