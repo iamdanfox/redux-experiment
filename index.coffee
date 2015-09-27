@@ -3,11 +3,26 @@ React = require 'react'
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 thunk = require('redux-thunk')
 
+console.log require './question.coffee'
+
 # ACTIONS
 
 INCREMENT_COUNTER = 'INCREMENT_COUNTER'
 DECREMENT_COUNTER = 'DECREMENT_COUNTER'
 SET_TO_7 = 'SET_TO_7'
+
+# REDUCERS
+
+counter = (state = 0, action) ->
+  switch action.type
+    when INCREMENT_COUNTER then state + 1
+    when DECREMENT_COUNTER then state - 1
+    when SET_TO_7 then 7
+    else state
+
+rootReducer = combineReducers {counter}
+createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+store = createStoreWithMiddleware rootReducer
 
 # ACTION CREATORS
 
@@ -60,19 +75,6 @@ mapDispatchToProps = (dispatch) ->
   bindActionCreators { increment, decrement, incrementAsync, incrementIfOdd, setTo7 }, dispatch
 
 App = connect(mapStateToProps, mapDispatchToProps)(Counter)
-
-# REDUCERS
-
-counter = (state = 0, action) ->
-  switch action.type
-    when INCREMENT_COUNTER then state + 1
-    when DECREMENT_COUNTER then state - 1
-    when SET_TO_7 then 7
-    else state
-
-rootReducer = combineReducers {counter}
-createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
-store = createStoreWithMiddleware rootReducer
 
 # INITIALISATION
 
