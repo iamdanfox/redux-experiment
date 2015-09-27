@@ -6,6 +6,8 @@ thunk = require('redux-thunk')
 Counter = require('./Counter')
 { increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
 
+ForWho = require './ForWho'
+
 QuestionList = require './QuestionList'
 { setText } = require('./Question').actionCreators
 
@@ -47,7 +49,12 @@ App = React.createClass
       else
         <button onClick={@props.advance}>Advance</button> }
 
-    <h2>Questions</h2>
+    <h2>Who For Step</h2>
+    <p>Perform an action and get launched into another wizard step</p>
+    <button>For me</button>
+    <button>For someone else</button>
+
+    <h2>Questions Step</h2>
     <button onClick={@props.append}>Append</button>
     <ul>
     { @props.questions.map ({text, questionType}, index) =>
