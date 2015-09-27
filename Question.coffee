@@ -1,6 +1,4 @@
-actions =
-  SET_TEXT: 'SET_TEXT'
-  SET_QUESTION_TYPE: 'SET_QUESTION_TYPE'
+actions = {'SET_TEXT', 'SET_QUESTION_TYPE'}
 
 actionCreators =
   setText: (text) -> {type: actions.SET_TEXT, text}
