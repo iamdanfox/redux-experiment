@@ -17,20 +17,17 @@ decrement = () -> {type: DECREMENT_COUNTER}
 
 setTo7 = () -> {type: SET_TO_7}
 
-incrementIfOdd = () ->
-  return (dispatch, getState) ->
-    { counter } = getState()
+incrementIfOdd = () -> (dispatch, getState) ->
+  if getState().counter % 2 is 0
+    return
 
-    if (counter % 2 is 0)
-      return
+  dispatch increment()
 
-    dispatch(increment())
-
-incrementAsync = (delay = 1000) ->
-  return (dispatch) ->
-    setTimeout () ->
-      dispatch(increment())
-    , delay
+incrementAsync = (delay = 1000) -> (dispatch) ->
+  setTimeout (() ->
+    dispatch increment()
+  ), delay
+  return
 
 # UI
 
@@ -59,14 +56,10 @@ Counter = React.createClass
       <button onClick={setTo7}>Set to 7</button>
     </p>
 
-mapStateToProps = (state) ->
-  return {
-    counter: state.counter
-  }
-
+mapStateToProps = ({counter}) -> {counter}
 
 mapDispatchToProps = (dispatch) ->
-  return bindActionCreators({ increment, decrement, incrementAsync, incrementIfOdd, setTo7 }, dispatch)
+  bindActionCreators { increment, decrement, incrementAsync, incrementIfOdd, setTo7 }, dispatch
 
 App = connect(mapStateToProps, mapDispatchToProps)(Counter)
 
@@ -79,17 +72,9 @@ counter = (state = 0, action) ->
     when SET_TO_7 then 7
     else state
 
-rootReducer = combineReducers({
-  counter
-})
-
-
-createStoreWithMiddleware = applyMiddleware(
-  thunk
-)(createStore)
-
-store = createStoreWithMiddleware(rootReducer)
-
+rootReducer = combineReducers {counter}
+createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+store = createStoreWithMiddleware rootReducer
 
 # INITIALISATION
 
