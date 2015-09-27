@@ -2,10 +2,12 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  entry: './index',
+  entry: {
+    feature1: './index.coffee',
+  },
   output: {
     path: path.join(__dirname, 'dist'),
-    filename: 'bundle.js'
+    filename: '[name].js'
   },
   module: {
     loaders: [{
