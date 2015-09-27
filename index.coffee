@@ -9,6 +9,10 @@ Counter = require('./Counter')
 QuestionList = require './QuestionList'
 { setText } = require('./Question').actionCreators
 
+BranchingWizardStepA = require './BranchingWizardStepA'
+{ b0, b1 } = BranchingWizardStepA.actionCreators
+Wizard = require './Wizard'
+
 
 # UI
 
@@ -16,6 +20,7 @@ App = React.createClass
   propTypes:
     counter: React.PropTypes.number.isRequired
     questions: React.PropTypes.array.isRequired
+    wizardStep: React.PropTypes.string.isRequired
 
   render: () ->
     <div>
@@ -33,6 +38,15 @@ App = React.createClass
       <button onClick={@props.setTo7}>Set to 7</button>
     </p>
 
+    <h1>Wizard step: {@props.wizardStep}</h1>
+    { if @props.wizardStep is 'A'
+        <div>
+          <button onClick={() => @props.advance b0()}>Advance to B0</button>
+          <button onClick={() => @props.advance b1()}>Advance to B1</button>
+        </div>
+      else
+        <button onClick={@props.advance}>Advance</button> }
+
     <h2>Questions</h2>
     <button onClick={@props.append}>Append</button>
     <ul>
@@ -46,15 +60,21 @@ App = React.createClass
     </div>
 
 
-rootReducer = combineReducers {counter: Counter.reducer, questions: QuestionList.reducer}
+rootReducer = combineReducers
+  counter: Counter.reducer
+  questions: QuestionList.reducer
+  wizardStep: Wizard.reducer
+
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware rootReducer
 
-mapStateToProps = ({counter, questions}) -> {counter, questions}
+mapStateToProps = ({counter, questions, wizardStep}) -> {counter, questions, wizardStep}
+
 mapDispatchToProps = (dispatch) ->
   cs = bindActionCreators Counter.actionCreators, dispatch
   qs = bindActionCreators QuestionList.actionCreators, dispatch
-  return Object.assign {}, cs, qs, {dispatch}
+  ws = bindActionCreators Wizard.actionCreators, dispatch
+  return Object.assign {}, cs, qs, ws
 
 ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App)
 
