@@ -3,7 +3,7 @@ React = require 'react'
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 thunk = require('redux-thunk')
 
-console.log require './question.coffee'
+console.log 'QL', require './QuestionList'
 
 # ACTIONS
 

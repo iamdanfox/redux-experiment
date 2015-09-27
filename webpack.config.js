@@ -12,13 +12,11 @@ module.exports = {
   externals: {
     react: 'React'
   },
+  resolve: {
+    extensions: ['', '.js', '.coffee']
+  },
   module: {
     loaders: [{
-      test: /\.js$/,
-      loaders: ['babel'],
-      exclude: /node_modules/,
-      include: __dirname
-    }, {
       test: /\.coffee$/,
       loaders: ['coffee-loader', 'cjsx-loader'],
       exclude: /node_modules/,
