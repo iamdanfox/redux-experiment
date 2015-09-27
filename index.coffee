@@ -1,7 +1,8 @@
 React = require 'react'
-{ Provider, connect } = require('react-redux')
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
+{ Provider, connect } = require('react-redux')
 thunk = require('redux-thunk')
+logger = require 'redux-logger'
 
 Counter = require('./redux/Counter')
 { increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
@@ -23,6 +24,7 @@ App = React.createClass
     counter: React.PropTypes.number.isRequired
     questions: React.PropTypes.array.isRequired
     wizardStep: React.PropTypes.string.isRequired
+    forWho: React.PropTypes.string.isRequired
 
   render: () ->
     <div>
@@ -46,10 +48,10 @@ App = React.createClass
           <button onClick={() => @props.advance b0()}>Advance to B0</button>
           <button onClick={() => @props.advance b1()}>Advance to B1</button>
         </div>
-      else
-        <button onClick={@props.advance}>Advance</button> }
+      else if @props.wizardStep isnt 'DONE'
+        <button onClick={() => @props.advance()}>Advance</button> }
 
-    <h2>For Who Step</h2>
+    <h2>For Who {@props.forWho}</h2>
     <p>Perform an action and get launched into another wizard step</p>
     <button onClick={@props.forMe}>For me</button>
     <button onClick={@props.forSomeoneElse}>For someone else</button>
@@ -73,7 +75,7 @@ rootReducer = combineReducers
   wizardStep: Wizard.reducer
   forWho: ForWho.reducer
 
-createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
 store = createStoreWithMiddleware rootReducer
 
 mapStateToProps = ({counter, questions, wizardStep, forWho}) -> {counter, questions, wizardStep, forWho}
