@@ -9,6 +9,9 @@ module.exports = {
     path: path.join(__dirname, 'dist'),
     filename: '[name].js'
   },
+  externals: {
+    react: 'React'
+  },
   module: {
     loaders: [{
       test: /\.js$/,

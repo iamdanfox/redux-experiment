@@ -3,7 +3,6 @@ React = require 'react'
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 thunk = require('redux-thunk')
 
-
 # ACTIONS
 
 INCREMENT_COUNTER = 'INCREMENT_COUNTER'
