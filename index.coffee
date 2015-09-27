@@ -49,10 +49,10 @@ App = React.createClass
       else
         <button onClick={@props.advance}>Advance</button> }
 
-    <h2>Who For Step</h2>
+    <h2>For Who Step</h2>
     <p>Perform an action and get launched into another wizard step</p>
-    <button>For me</button>
-    <button>For someone else</button>
+    <button onClick={@props.forMe}>For me</button>
+    <button onClick={@props.forSomeoneElse}>For someone else</button>
 
     <h2>Questions Step</h2>
     <button onClick={@props.append}>Append</button>
@@ -71,17 +71,19 @@ rootReducer = combineReducers
   counter: Counter.reducer
   questions: QuestionList.reducer
   wizardStep: Wizard.reducer
+  forWho: ForWho.reducer
 
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware rootReducer
 
-mapStateToProps = ({counter, questions, wizardStep}) -> {counter, questions, wizardStep}
+mapStateToProps = ({counter, questions, wizardStep, forWho}) -> {counter, questions, wizardStep, forWho}
 
 mapDispatchToProps = (dispatch) ->
   cs = bindActionCreators Counter.actionCreators, dispatch
   qs = bindActionCreators QuestionList.actionCreators, dispatch
   ws = bindActionCreators Wizard.actionCreators, dispatch
-  return Object.assign {}, cs, qs, ws
+  fs = bindActionCreators ForWho.actionCreators, dispatch
+  return Object.assign {}, cs, qs, ws, fs
 
 ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App)
 

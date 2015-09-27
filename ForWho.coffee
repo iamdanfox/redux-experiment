@@ -19,6 +19,7 @@ reducer = (state = null, action) ->
     when actions.FOR_SOMEONE_ELSE then actions.FOR_SOMEONE_ELSE
     else state
 
+module.exports = {actions, actionCreators, reducer}
 
 
 # cheeky little unit tests
