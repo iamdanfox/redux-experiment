@@ -3,6 +3,8 @@ var { Provider, connect } = require('react-redux');
 var { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux');
 var thunk = require('redux-thunk');
 
+var dummy = require('./dummy.coffee');
+
 // ACTIONS
 
 var INCREMENT_COUNTER = 'INCREMENT_COUNTER';
