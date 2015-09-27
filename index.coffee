@@ -3,6 +3,7 @@ React = require 'react'
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 thunk = require('redux-thunk')
 QuestionList = require './QuestionList'
+Question = require './Question'
 
 # ACTIONS
 
@@ -19,7 +20,7 @@ counter = (state = 0, action) ->
     when SET_TO_7 then 7
     else state
 
-rootReducer = combineReducers {counter, questionList: QuestionList.reducer}
+rootReducer = combineReducers {counter, questions: QuestionList.reducer}
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware rootReducer
 
@@ -47,8 +48,10 @@ incrementAsync = (delay = 1000) -> (dispatch) ->
 Counter = React.createClass
   propTypes:
     counter: React.PropTypes.number.isRequired
+    questions: React.PropTypes.array.isRequired
 
   render: () ->
+    <div>
     <p>
       Clicked: {@props.counter} times
       {' '}
@@ -63,13 +66,28 @@ Counter = React.createClass
       <button onClick={() => @props.dispatch setTo7()}>Set to 7</button>
     </p>
 
-mapStateToProps = ({counter}) -> {counter}
+    <h2>Questions</h2>
+    <button onClick={() => @props.dispatch QuestionList.actionCreators.append()}>Append</button>
+    <ul>
+    { @props.questions.map ({text, questionType}, index) =>
+      <li>
+        (Type: {questionType}),
+        <input type= 'text' value={text} onChange={(e) =>
+        @props.dispatch QuestionList.actionCreators.modify index, Question.actionCreators.setText e.target.value} />
+        <button onClick={() => @props.dispatch QuestionList.actionCreators.delete index}>Delete</button>
+      </li> }
+    </ul>
+    </div>
 
+mapStateToProps = ({counter, questions}) -> {counter, questions}
 mapDispatchToProps = (dispatch) -> {dispatch}
-
 App = connect(mapStateToProps, mapDispatchToProps)(Counter)
 
 # INITIALISATION
+
+store.dispatch QuestionList.actionCreators.append()
+store.dispatch QuestionList.actionCreators.append()
+store.dispatch QuestionList.actionCreators.modify 1, Question.actionCreators.setText 'Hello'
 
 React.render <Provider store={store}>{() -> <App />}</Provider>, document.getElementById('root')
 
