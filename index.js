@@ -1,8 +1,7 @@
-import React from 'react';
-import { Provider, connect } from 'react-redux';
-import { createStore, applyMiddleware, combineReducers, bindActionCreators } from 'redux';
-import thunk from 'redux-thunk';
-
+const React = require('react');
+const { Provider, connect } = require('react-redux');
+const { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux');
+const thunk = require('redux-thunk');
 
 // ACTIONS
 
