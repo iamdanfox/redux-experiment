@@ -31,7 +31,6 @@ createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware combineReducers {forWho: reducer, wizard: Wizard.reducer}
 store2 = createStoreWithMiddleware combineReducers {forWho: reducer, wizard: Wizard.reducer}
 
-
 console.assert store.getState().forWho is null, 'initial null'
 store.dispatch actionCreators.forMe()
 console.assert store.getState().forWho is 'FOR_ME', 'can set for me'

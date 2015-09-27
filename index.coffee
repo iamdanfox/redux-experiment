@@ -3,17 +3,17 @@ React = require 'react'
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 thunk = require('redux-thunk')
 
-Counter = require('./Counter')
+Counter = require('./redux/Counter')
 { increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
 
-ForWho = require './ForWho'
+ForWho = require './redux/ForWho'
 
-QuestionList = require './QuestionList'
-{ setText } = require('./Question').actionCreators
+QuestionList = require './redux/QuestionList'
+{ setText } = require('./redux/Question').actionCreators
 
-BranchingWizardStepA = require './BranchingWizardStepA'
+BranchingWizardStepA = require './redux/BranchingWizardStepA'
 { b0, b1 } = BranchingWizardStepA.actionCreators
-Wizard = require './Wizard'
+Wizard = require './redux/Wizard'
 
 
 # UI
@@ -35,7 +35,7 @@ App = React.createClass
       {' '}
       <button onClick={@props.incrementIfOdd}>Increment if odd</button>
       {' '}
-      <button onClick={() => @props.dispatch incrementAsync()}>Increment async</button>
+      <button onClick={() => @props.incrementAsync()}>Increment async</button>
 
       <button onClick={@props.setTo7}>Set to 7</button>
     </p>
