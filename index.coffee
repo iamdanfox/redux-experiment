@@ -11,15 +11,11 @@ SET_TO_7 = 'SET_TO_7'
 
 # ACTION CREATORS
 
-increment = () ->
-  return {
-    type: INCREMENT_COUNTER
-  }
+increment = () -> {type: INCREMENT_COUNTER}
 
-decrement = () ->
-  return {
-    type: DECREMENT_COUNTER
-  }
+decrement = () -> {type: DECREMENT_COUNTER}
+
+setTo7 = () -> {type: SET_TO_7}
 
 incrementIfOdd = () ->
   return (dispatch, getState) ->
@@ -35,12 +31,6 @@ incrementAsync = (delay = 1000) ->
     setTimeout () ->
       dispatch(increment())
     , delay
-
-
-setTo7 = () ->
-  return {
-    type: SET_TO_7
-  }
 
 # UI
 
@@ -84,14 +74,10 @@ App = connect(mapStateToProps, mapDispatchToProps)(Counter)
 
 counter = (state = 0, action) ->
   switch action.type
-    when INCREMENT_COUNTER
-      return state + 1
-    when DECREMENT_COUNTER
-      return state - 1
-    when SET_TO_7
-      return 7
-    else
-      return state
+    when INCREMENT_COUNTER then state + 1
+    when DECREMENT_COUNTER then state - 1
+    when SET_TO_7 then 7
+    else state
 
 rootReducer = combineReducers({
   counter
@@ -107,9 +93,5 @@ store = createStoreWithMiddleware(rootReducer)
 
 # INITIALISATION
 
-React.render(
-  <Provider store={store}>
-    {() -> <App />}
-  </Provider>,
-  document.getElementById('root')
-)
+React.render <Provider store={store}>{() -> <App />}</Provider>, document.getElementById('root')
+
