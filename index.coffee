@@ -27,7 +27,6 @@ incrementAsync = (delay = 1000) -> (dispatch) ->
   setTimeout (() ->
     dispatch increment()
   ), delay
-  return
 
 # UI
 
@@ -41,19 +40,18 @@ Counter = React.createClass
     counter: React.PropTypes.number.isRequired
 
   render: () ->
-    { increment, incrementIfOdd, incrementAsync, decrement, setTo7, counter } = this.props
     <p>
-      Clicked: {counter} times
+      Clicked: {@props.counter} times
       {' '}
-      <button onClick={increment}>+</button>
+      <button onClick={@props.increment}>+</button>
       {' '}
-      <button onClick={decrement}>-</button>
+      <button onClick={@props.decrement}>-</button>
       {' '}
-      <button onClick={incrementIfOdd}>Increment if odd</button>
+      <button onClick={@props.incrementIfOdd}>Increment if odd</button>
       {' '}
-      <button onClick={() -> incrementAsync()}>Increment async</button>
+      <button onClick={() => @props.incrementAsync()}>Increment async</button>
 
-      <button onClick={setTo7}>Set to 7</button>
+      <button onClick={@props.setTo7}>Set to 7</button>
     </p>
 
 mapStateToProps = ({counter}) -> {counter}
