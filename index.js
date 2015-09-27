@@ -1,13 +1,13 @@
-const React = require('react');
-const { Provider, connect } = require('react-redux');
-const { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux');
-const thunk = require('redux-thunk');
+var React = require('react');
+var { Provider, connect } = require('react-redux');
+var { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux');
+var thunk = require('redux-thunk');
 
 // ACTIONS
 
-const INCREMENT_COUNTER = 'INCREMENT_COUNTER';
-const DECREMENT_COUNTER = 'DECREMENT_COUNTER';
-const SET_TO_7 = 'SET_TO_7';
+var INCREMENT_COUNTER = 'INCREMENT_COUNTER';
+var DECREMENT_COUNTER = 'DECREMENT_COUNTER';
+var SET_TO_7 = 'SET_TO_7';
 
 // ACTION CREATORS
 
@@ -25,7 +25,7 @@ function decrement() {
 
 function incrementIfOdd() {
   return (dispatch, getState) => {
-    const { counter } = getState();
+    var { counter } = getState();
 
     if (counter % 2 === 0) {
       return;
@@ -52,7 +52,7 @@ function setTo7() {
 
 // UI
 
-const Counter = React.createClass({
+var Counter = React.createClass({
   propTypes: {
     increment: React.PropTypes.func.isRequired,
     incrementIfOdd: React.PropTypes.func.isRequired,
@@ -63,7 +63,7 @@ const Counter = React.createClass({
   },
 
   render: function() {
-    const { increment, incrementIfOdd, incrementAsync, decrement, setTo7, counter } = this.props;
+    var { increment, incrementIfOdd, incrementAsync, decrement, setTo7, counter } = this.props;
     return (
       <p>
         Clicked: {counter} times
@@ -92,7 +92,7 @@ function mapDispatchToProps(dispatch) {
   return bindActionCreators({ increment, decrement, incrementAsync, incrementIfOdd, setTo7 }, dispatch);
 }
 
-const App = connect(mapStateToProps, mapDispatchToProps)(Counter);
+var App = connect(mapStateToProps, mapDispatchToProps)(Counter);
 
 // REDUCERS
 
@@ -109,16 +109,16 @@ function counter(state = 0, action) {
   }
 }
 
-const rootReducer = combineReducers({
+var rootReducer = combineReducers({
   counter
 });
 
 
-const createStoreWithMiddleware = applyMiddleware(
+var createStoreWithMiddleware = applyMiddleware(
   thunk
 )(createStore);
 
-const store = createStoreWithMiddleware(rootReducer);
+var store = createStoreWithMiddleware(rootReducer);
 
 // INITIALISATION
 
