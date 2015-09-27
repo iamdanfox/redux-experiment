@@ -5,43 +5,10 @@ thunk = require('redux-thunk')
 QuestionList = require './QuestionList'
 Question = require './Question'
 
-# ACTIONS
+Counter = require('./Counter')
+{INCREMENT_COUNTER, DECREMENT_COUNTER, SET_TO_7} = Counter.actions
+{increment, decrement, setTo7, incrementIfOdd, incrementAsync} = Counter.actionCreators
 
-INCREMENT_COUNTER = 'INCREMENT_COUNTER'
-DECREMENT_COUNTER = 'DECREMENT_COUNTER'
-SET_TO_7 = 'SET_TO_7'
-
-# REDUCERS
-
-counter = (state = 0, action) ->
-  switch action.type
-    when INCREMENT_COUNTER then state + 1
-    when DECREMENT_COUNTER then state - 1
-    when SET_TO_7 then 7
-    else state
-
-rootReducer = combineReducers {counter, questions: QuestionList.reducer}
-createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
-store = createStoreWithMiddleware rootReducer
-
-# ACTION CREATORS
-
-increment = () -> {type: INCREMENT_COUNTER}
-
-decrement = () -> {type: DECREMENT_COUNTER}
-
-setTo7 = () -> {type: SET_TO_7}
-
-incrementIfOdd = () -> (dispatch, getState) ->
-  if getState().counter % 2 is 0
-    return
-
-  dispatch increment()
-
-incrementAsync = (delay = 1000) -> (dispatch) ->
-  setTimeout (() ->
-    dispatch increment()
-  ), delay
 
 # UI
 
@@ -78,6 +45,11 @@ Counter = React.createClass
       </li> }
     </ul>
     </div>
+
+
+rootReducer = combineReducers {counter: Counter.reducer, questions: QuestionList.reducer}
+createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+store = createStoreWithMiddleware rootReducer
 
 mapStateToProps = ({counter, questions}) -> {counter, questions}
 mapDispatchToProps = (dispatch) -> {dispatch}
