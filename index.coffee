@@ -5,6 +5,7 @@ thunk = require('redux-thunk')
 logger = require 'redux-logger'
 
 Counter = require('./redux/Counter')
+RoutableCounter = require './redux/RoutableCounter'
 { increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
 
 # UI
