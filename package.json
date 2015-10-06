@@ -3,7 +3,8 @@
   "version": "0.0.0",
   "description": "Redux counter example",
   "scripts": {
-    "start": "open index.html && ./node_modules/.bin/webpack --watch"
+    "server": "open http://localhost:8000 && python -m SimpleHTTPServer",
+    "watch": "webpack --watch"
   },
   "repository": {
     "type": "git",
