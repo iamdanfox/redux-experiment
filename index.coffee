@@ -33,20 +33,33 @@ App = React.createClass
 # rootReducer = combineReducers
 #   counter: RoutableCounter.reducer
 
-createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
+# createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
+createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware RoutableCounter.reducer
 
+
+
+dropFirstSlash = (path) -> path.substr 1
+addFirstSlash = (path) -> '/' + path
 
 prevUrl = store.getState().url
 unsubscribe = store.subscribe () ->
   newUrl = store.getState().url
   if prevUrl isnt newUrl
-    console.log 'pushState', newUrl
-    window.history.pushState null, null, newUrl
+    console.log 'pushState', '/' + newUrl
+    window.history.replaceState null, null, addFirstSlash(newUrl)
   prevUrl = newUrl
 
 
 
+handlePath = () ->
+  url = dropFirstSlash window.location.pathname
+  store.dispatch RoutableCounter.actionCreators.handleUrl url
+
+console.log 'onpopstate initial path', dropFirstSlash window.location.pathname
+handlePath()
+window.onpopstate = (e) ->
+  handlePath()
 
 
 
