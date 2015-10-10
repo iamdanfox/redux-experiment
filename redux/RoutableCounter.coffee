@@ -19,14 +19,21 @@ actionCreators =
     else
       return wrapAction {action, createHistoryEntry}
 
-  handleUrl: (path) ->
-    actionCreators.wrapped Counter.actionCreators.set(parseInt(path, 10))
+  handleUrl: (path, createHistoryEntry = true) ->
+    if path is '' # initial load
+      initial = Counter.reducer undefined, {}
+      return actionCreators.wrapped Counter.actionCreators.set(initial), createHistoryEntry
+
+    number = parseInt path, 10
+    return actionCreators.wrapped Counter.actionCreators.set(number), createHistoryEntry
 
   backToUrl: (path) ->
-    actionCreators.wrapped Counter.actionCreators.set(parseInt(path, 10)), false
+    actionCreators.handleUrl path, false
 
 
-reducer = (state = {wrappedState: undefined, url: undefined, createHistoryEntry: true}, action) ->
+initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, createHistoryEntry: true}
+
+reducer = (state = initialState, action) ->
   coreState = Counter.reducer unwrapState(state), unwrapAction(action) or {}
   oldUrl = state.url
   url = coreState.toString()
@@ -34,24 +41,24 @@ reducer = (state = {wrappedState: undefined, url: undefined, createHistoryEntry:
   return Object.assign wrapState(coreState), {url, createHistoryEntry}
 
 
-module.exports = {actions, actionCreators, reducer}
+module.exports = {actions, actionCreators, reducer, unwrapState}
 
 # cheeky little unit tests
 
 { createStore } = require 'redux'
 store = createStore reducer
-console.assert store.getState().wrappedState is 0, 'initial state'
+console.assert unwrapState(store.getState()) is 0, 'initial state'
 console.assert store.getState().url is '0', 'initial url '
 
 store.dispatch actionCreators.handleUrl '1'
 
-console.assert store.getState().wrappedState is 1, 'state has changed after handleUrl'
+console.assert unwrapState(store.getState()) is 1, 'state has changed after handleUrl'
 console.assert store.getState().url is '1', 'url has changed'
 console.assert store.getState().createHistoryEntry is true, 'should create history entries by default'
 
 store.dispatch actionCreators.backToUrl '0'
 
-console.assert store.getState().wrappedState is 0, 'state has changed after backToUrl'
+console.assert unwrapState(store.getState()) is 0, 'state has changed after backToUrl'
 console.assert store.getState().url is '0', 'url has changed'
 console.assert store.getState().createHistoryEntry is false, 'should not create history entry for a back action'
 

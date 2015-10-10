@@ -7,7 +7,6 @@ logger = require 'redux-logger'
 Counter = require './redux/Counter'
 RoutableCounter = require './redux/RoutableCounter'
 { increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
-{ wrapped } = RoutableCounter.actionCreators
 
 # UI
 
@@ -63,9 +62,11 @@ window.onpopstate = (e) ->
 
 
 
-mapStateToProps = ({wrappedState}) -> {reduxState: wrappedState}
+mapStateToProps = (state) -> {reduxState: RoutableCounter.unwrapState state}
 mapDispatchToProps = (realDispatch) ->
-  dispatch: (action) -> realDispatch wrapped action
+  return {
+    dispatch: (action) -> realDispatch RoutableCounter.actionCreators.wrapped action
+  }
 
 ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App)
 
