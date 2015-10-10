@@ -3,17 +3,21 @@ Counter = require './Counter'
 
 actions = { 'WRAPPED' }
 
-wrap = ({action, createHistoryEntry}) -> {type: actions.WRAPPED, wrappedAction: action, createHistoryEntry}
+wrapAction = ({action, createHistoryEntry}) -> {type: actions.WRAPPED, wrappedAction: action, createHistoryEntry}
+unwrapAction = (action) -> action.wrappedAction
+
+wrapState = (state) -> {wrappedState: state}
+unwrapState = (state) -> state.wrappedState
 
 actionCreators =
   wrapped: (action, createHistoryEntry = true) ->
-    if typeof wrappedAction is 'function' # ie, redux-thunk
+    if typeof action is 'function' # ie, redux-thunk
       return (realDispatch, realGetState) ->
-        dispatch = (wrappedAction) -> realDispatch wrap {action, createHistoryEntry}
-        getState = () -> realGetState().wrappedState
-        wrappedAction dispatch, getState
+        dispatch = (a) -> realDispatch wrapAction {action: a, createHistoryEntry}
+        getState = () -> unwrapState realGetState()
+        action dispatch, getState
     else
-      return wrap {action, createHistoryEntry}
+      return wrapAction {action, createHistoryEntry}
 
   handleUrl: (path) ->
     actionCreators.wrapped Counter.actionCreators.set(parseInt(path, 10))
@@ -23,13 +27,11 @@ actionCreators =
 
 
 reducer = (state = {wrappedState: undefined, url: undefined, createHistoryEntry: true}, action) ->
-  wrappedState = Counter.reducer state.wrappedState, action.wrappedAction or {}
+  coreState = Counter.reducer unwrapState(state), unwrapAction(action) or {}
   oldUrl = state.url
-  newUrl = wrappedState.toString()
-
-  createHistoryEntry = (newUrl isnt oldUrl) and (if action.createHistoryEntry? then action.createHistoryEntry else true)
-
-  return { wrappedState, url: newUrl, createHistoryEntry}
+  url = coreState.toString()
+  createHistoryEntry = (url isnt oldUrl) and (if action.createHistoryEntry? then action.createHistoryEntry else true)
+  return Object.assign wrapState(coreState), {url, createHistoryEntry}
 
 
 module.exports = {actions, actionCreators, reducer}
