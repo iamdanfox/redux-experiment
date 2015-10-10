@@ -3,9 +3,17 @@ Counter = require './Counter'
 
 actions = { 'WRAPPED' }
 
+wrap = (wrappedAction) -> {type: actions.WRAPPED, wrappedAction}
+
 actionCreators =
   wrapped: (wrappedAction) ->
-    return {type: actions.WRAPPED, wrappedAction}
+    if typeof wrappedAction is 'function' # ie, redux-thunk
+      return (realDispatch, realGetState) ->
+        dispatch = (action) -> realDispatch wrap action
+        getState = () -> realGetState().wrappedState
+        wrappedAction dispatch, getState
+    else
+      return wrap wrappedAction
 
   handleUrl: (newUrl) ->
     actionCreators.wrapped Counter.actionCreators.set parseInt(newUrl, 10)

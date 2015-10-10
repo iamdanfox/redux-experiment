@@ -35,8 +35,8 @@ App = React.createClass
 # rootReducer = combineReducers
 #   counter: RoutableCounter.reducer
 
-# createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
-createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
+# createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware RoutableCounter.reducer
 
 
