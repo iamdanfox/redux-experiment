@@ -1,27 +1,34 @@
 Counter = require './Counter'
 
 
-prefixes = { 'NESTED$' }
+prefixes = { 'Rt$' }
+
+prefix = (string) -> prefixes.Rt$ + string
+unprefix = (prefixedString) ->
+  if prefixedString.indexOf(prefixes.Rt$) is -1
+    return null
+  return prefixedString.substr prefixes.Rt$.length
+
+console.assert prefix('a') is 'Rt$a', 'should add prefix correctly'
+console.assert unprefix('Rt$a') is 'a', 'should remove prefix correctly'
+console.assert unprefix('JKJADLJa') is null, 'shouldnt remove non prefix'
+
 
 extendAction = (key, value, action) ->
   extension = {}
-  extension[key] = value
+  extension[prefix key] = value
   return Object.assign {}, action, extension
-
 unextendAction = (key, originalAction) ->
   action = Object.assign {}, originalAction
   extension = {}
-  extension[key] = action[key]
-  delete action[key]
+  extension[key] = action[prefix key]
+  delete action[prefix key]
   return {action, extension}
 
-wrapAction = (action) -> Object.assign {}, action, {type: prefixes.NESTED$ + action.type}
-# iff `action` was a wrapped action, return the inner action. (otherwise null)
+wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
 unwrapAction = (action) ->
-  if action.type.indexOf(prefixes.NESTED$) is -1
-    return null
-
-  return Object.assign {}, action, {type: action.type.substr prefixes.NESTED$.length}
+  return null unless (type = unprefix action.type)?
+  return Object.assign {}, action, {type}
 
 wrapState = (state) -> {inner: state}
 unwrapState = (state) -> state.inner
