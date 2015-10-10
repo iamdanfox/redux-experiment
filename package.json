@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Redux counter example",
   "scripts": {
-    "server": "open http://localhost:8000 && python -m SimpleHTTPServer",
+    "start": "open http://localhost:3000 && node server.js",
     "watch": "webpack --watch"
   },
   "repository": {
@@ -26,6 +26,7 @@
     "cjsx-loader": "^2.0.1",
     "coffee-loader": "^0.7.2",
     "coffee-script": "^1.10.0",
+    "express": "^4.13.3",
     "gulp": "^3.9.0",
     "gulp-util": "^3.0.6",
     "webpack": "^1.9.11"
