@@ -3,29 +3,33 @@ Counter = require './Counter'
 
 actions = { 'WRAPPED' }
 
-wrap = ({wrappedAction, shouldCreateHistory}) -> {type: actions.WRAPPED, wrappedAction, shouldCreateHistory}
+wrap = ({action, createHistoryEntry}) -> {type: actions.WRAPPED, wrappedAction: action, createHistoryEntry}
 
 actionCreators =
-  wrapped: (wrappedAction, shouldCreateHistory = true) ->
+  wrapped: (action, createHistoryEntry = true) ->
     if typeof wrappedAction is 'function' # ie, redux-thunk
       return (realDispatch, realGetState) ->
-        dispatch = (wrappedAction) -> realDispatch wrap {wrappedAction, shouldCreateHistory}
+        dispatch = (wrappedAction) -> realDispatch wrap {action, createHistoryEntry}
         getState = () -> realGetState().wrappedState
         wrappedAction dispatch, getState
     else
-      return wrap {wrappedAction, shouldCreateHistory}
+      return wrap {action, createHistoryEntry}
 
-  handleUrl: (url) ->
-    actionCreators.wrapped Counter.actionCreators.set(parseInt(url, 10))
+  handleUrl: (path) ->
+    actionCreators.wrapped Counter.actionCreators.set(parseInt(path, 10))
 
-  backToUrl: (url) ->
-    actionCreators.wrapped Counter.actionCreators.set(parseInt(url, 10)), false
+  backToUrl: (path) ->
+    actionCreators.wrapped Counter.actionCreators.set(parseInt(path, 10)), false
 
 
-reducer = (state = {wrappedState: undefined, url: undefined, shouldCreateHistory: true}, action) ->
+reducer = (state = {wrappedState: undefined, url: undefined, createHistoryEntry: true}, action) ->
   wrappedState = Counter.reducer state.wrappedState, action.wrappedAction or {}
-  shouldCreateHistory = if action.shouldCreateHistory? then action.shouldCreateHistory else true
-  return { wrappedState, url: wrappedState.toString(), shouldCreateHistory}
+  oldUrl = state.url
+  newUrl = wrappedState.toString()
+
+  createHistoryEntry = (newUrl isnt oldUrl) and (if action.createHistoryEntry? then action.createHistoryEntry else true)
+
+  return { wrappedState, url: newUrl, createHistoryEntry}
 
 
 module.exports = {actions, actionCreators, reducer}
@@ -41,14 +45,14 @@ store.dispatch actionCreators.handleUrl '1'
 
 console.assert store.getState().wrappedState is 1, 'state has changed after handleUrl'
 console.assert store.getState().url is '1', 'url has changed'
-console.assert store.getState().shouldCreateHistory is true, 'should create history entries by default'
+console.assert store.getState().createHistoryEntry is true, 'should create history entries by default'
 
 store.dispatch actionCreators.backToUrl '0'
 
 console.assert store.getState().wrappedState is 0, 'state has changed after backToUrl'
 console.assert store.getState().url is '0', 'url has changed'
-console.assert store.getState().shouldCreateHistory is false, 'should not create history entry for a back action'
+console.assert store.getState().createHistoryEntry is false, 'should not create history entry for a back action'
 
 store.dispatch {type:'UNKNOWN'}
 
-console.assert store.getState().shouldCreateHistory is true, 'any other action should create history by default'
+console.assert store.getState().createHistoryEntry is false, 'unchanged url shouldnt create history'

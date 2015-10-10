@@ -44,26 +44,22 @@ store = createStoreWithMiddleware RoutableCounter.reducer
 dropFirstSlash = (path) -> path.substr 1
 addFirstSlash = (path) -> '/' + path
 
-prevUrl = store.getState().url
 unsubscribe = store.subscribe () ->
-  { url, shouldCreateHistory } = store.getState()
-  shouldntCreateHistoryEntry = (prevUrl is url) or not shouldCreateHistory
-  prevUrl = url
-
-  if shouldntCreateHistoryEntry
+  { url, createHistoryEntry } = store.getState()
+  if not createHistoryEntry
     return
 
   window.history.pushState null, null, addFirstSlash(url)
 
 
 # do initial page load.
-url = dropFirstSlash window.location.pathname
-store.dispatch RoutableCounter.actionCreators.handleUrl url
+path = dropFirstSlash window.location.pathname
+store.dispatch RoutableCounter.actionCreators.handleUrl path
 
 window.onpopstate = (e) ->
   # back button shouldn't insert a new history entry.
-  url = dropFirstSlash window.location.pathname
-  store.dispatch RoutableCounter.actionCreators.backToUrl url
+  path = dropFirstSlash window.location.pathname
+  store.dispatch RoutableCounter.actionCreators.backToUrl path
 
 
 
