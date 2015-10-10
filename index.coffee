@@ -44,22 +44,28 @@ store = createStoreWithMiddleware RoutableCounter.reducer
 dropFirstSlash = (path) -> path.substr 1
 addFirstSlash = (path) -> '/' + path
 
-# prevUrl = store.getState().url
+prevUrl = store.getState().url
+
 unsubscribe = store.subscribe () ->
-  newUrl = store.getState().url
-  # if prevUrl isnt newUrl
-  window.history.replaceState null, null, addFirstSlash(newUrl)
-  # prevUrl = newUrl
+  { url, reachedByBackButton } = store.getState()
+  console.log 'store listener heard:', url, 'reachedByBackButton', reachedByBackButton
+  if (prevUrl is url) or reachedByBackButton
+    prevUrl = url
+    return
+
+  console.log 'adding history entry'
+  window.history.pushState null, null, addFirstSlash(url)
+  prevUrl = url
 
 
+# do initial page load.
+url = dropFirstSlash window.location.pathname
+store.dispatch RoutableCounter.actionCreators.handleUrl url
 
-handlePath = () ->
-  url = dropFirstSlash window.location.pathname
-  store.dispatch RoutableCounter.actionCreators.handleUrl url
-
-handlePath()
 window.onpopstate = (e) ->
-  handlePath()
+  # back button shouldn't insert a new history entry.
+  url = dropFirstSlash window.location.pathname
+  store.dispatch RoutableCounter.actionCreators.backToUrl url
 
 
 
