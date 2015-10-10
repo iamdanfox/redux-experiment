@@ -4,7 +4,7 @@ React = require 'react'
 thunk = require('redux-thunk')
 logger = require 'redux-logger'
 
-Counter = require('./redux/Counter')
+Counter = require './redux/Counter'
 RoutableCounter = require './redux/RoutableCounter'
 { increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
 
@@ -18,28 +18,51 @@ App = React.createClass
     <p>
       Clicked: {@props.counter} times
       {' '}
-      <button onClick={@props.increment}>+</button>
+      <button onClick={() => @props.wrapped increment()}>+</button>
       {' '}
-      <button onClick={@props.decrement}>-</button>
+      <button onClick={() => @props.wrapped decrement()}>-</button>
       {' '}
-      <button onClick={@props.incrementIfOdd}>Increment if odd</button>
+      <button onClick={() => @props.wrapped incrementIfOdd()}>Increment if odd</button>
       {' '}
-      <button onClick={() => @props.incrementAsync()}>Increment async</button>
+      <button onClick={() => @props.wrapped incrementAsync()}>Increment async</button>
 
-      <button onClick={@props.setTo7}>Set to 7</button>
+      <button onClick={() => @props.wrapped setTo7()}>Set to 7</button>
     </p>
 
 
-rootReducer = combineReducers
-  counter: Counter.reducer
+# rootReducer = combineReducers
+#   counter: RoutableCounter.reducer
 
 createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
-store = createStoreWithMiddleware rootReducer
+store = createStoreWithMiddleware RoutableCounter.reducer
 
-mapStateToProps = (state) -> state
+
+prevUrl = store.getState().url
+unsubscribe = store.subscribe () ->
+  newUrl = store.getState().url
+  if prevUrl isnt newUrl
+    console.log 'pushState', newUrl
+    window.history.pushState null, null, newUrl
+  prevUrl = newUrl
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+mapStateToProps = ({wrappedState}) -> {counter: wrappedState}
 
 mapDispatchToProps = (dispatch) ->
-  cs = bindActionCreators Counter.actionCreators, dispatch
+  cs = bindActionCreators RoutableCounter.actionCreators, dispatch
   return Object.assign {}, cs
 
 ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App)
