@@ -13,12 +13,12 @@ RoutableCounter = require './redux/RoutableCounter'
 
 App = React.createClass
   propTypes:
-    counter: React.PropTypes.number.isRequired
+    reduxState: React.PropTypes.number.isRequired
     dispatch: React.PropTypes.func.isRequired
 
   render: () ->
     <p>
-      Clicked: {@props.counter} times
+      Clicked: {@props.reduxState} times
       {' '}
       <button onClick={() => @props.dispatch increment()}>+</button>
       {' '}
@@ -33,7 +33,7 @@ App = React.createClass
 
 
 # rootReducer = combineReducers
-#   counter: RoutableCounter.reducer
+#   reduxState: RoutableCounter.reducer
 
 createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
 # createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
@@ -45,17 +45,15 @@ dropFirstSlash = (path) -> path.substr 1
 addFirstSlash = (path) -> '/' + path
 
 prevUrl = store.getState().url
-
 unsubscribe = store.subscribe () ->
-  { url, reachedByBackButton } = store.getState()
-  console.log 'store listener heard:', url, 'reachedByBackButton', reachedByBackButton
-  if (prevUrl is url) or reachedByBackButton
-    prevUrl = url
+  { url, shouldCreateHistory } = store.getState()
+  shouldntCreateHistoryEntry = (prevUrl is url) or not shouldCreateHistory
+  prevUrl = url
+
+  if shouldntCreateHistoryEntry
     return
 
-  console.log 'adding history entry'
   window.history.pushState null, null, addFirstSlash(url)
-  prevUrl = url
 
 
 # do initial page load.
@@ -69,7 +67,7 @@ window.onpopstate = (e) ->
 
 
 
-mapStateToProps = ({wrappedState}) -> {counter: wrappedState}
+mapStateToProps = ({wrappedState}) -> {reduxState: wrappedState}
 mapDispatchToProps = (realDispatch) ->
   dispatch: (action) -> realDispatch wrapped action
 
