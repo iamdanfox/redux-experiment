@@ -1,13 +1,22 @@
 Counter = require './Counter'
 
 
-actions = { 'WRAPPED' }
+actions = { 'NESTED$' }
 
-wrapAction = ({action, createHistoryEntry}) -> {type: actions.WRAPPED, wrappedAction: action, createHistoryEntry}
-unwrapAction = (action) -> action.wrappedAction
+wrapAction = ({action, createHistoryEntry}) -> Object.assign {}, action, {type: actions.NESTED$ + action.type, createHistoryEntry}
+# iff `action` was a wrapped action, return the inner action. (otherwise null)
+unwrapAction = (action) ->
+  if action.type.indexOf(actions.NESTED$) is -1
+    return null
 
-wrapState = (state) -> {wrappedState: state}
-unwrapState = (state) -> state.wrappedState
+  innerAction = Object.assign {}, action, {type: action.type.substr(actions.NESTED$.length)}
+  delete innerAction.createHistoryEntry
+  return innerAction
+
+wrapState = (state) -> {inner: state}
+unwrapState = (state) -> state.inner
+
+
 
 actionCreators =
   wrapped: (action, createHistoryEntry = true) ->
@@ -34,14 +43,14 @@ actionCreators =
 initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, createHistoryEntry: true}
 
 reducer = (state = initialState, action) ->
-  coreState = Counter.reducer unwrapState(state), unwrapAction(action) or {}
+  innerState = Counter.reducer unwrapState(state), unwrapAction(action) or {}
   oldUrl = state.url
-  url = coreState.toString()
+  url = innerState.toString()
   createHistoryEntry = (url isnt oldUrl) and (if action.createHistoryEntry? then action.createHistoryEntry else true)
-  return Object.assign wrapState(coreState), {url, createHistoryEntry}
+  return Object.assign wrapState(innerState), {url, createHistoryEntry}
 
 
-module.exports = {actions, actionCreators, reducer, unwrapState}
+module.exports = {actionCreators, reducer, unwrapState}
 
 # cheeky little unit tests
 
