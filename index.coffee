@@ -65,7 +65,7 @@ window.onpopstate = (e) ->
 mapStateToProps = (state) -> {reduxState: RoutableCounter.unwrapState state}
 mapDispatchToProps = (realDispatch) ->
   return {
-    dispatch: (action) -> realDispatch RoutableCounter.actionCreators.wrapped action
+    dispatch: (action) -> realDispatch RoutableCounter.actionCreators.forwardAction action
   }
 
 ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App)

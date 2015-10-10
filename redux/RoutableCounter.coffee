@@ -36,7 +36,7 @@ unwrapState = (state) -> state.inner
 
 
 actionCreators =
-  wrapped: (action, createHistoryEntry = true) ->
+  forwardAction: (action, createHistoryEntry = true) ->
     if typeof action is 'function' # ie, redux-thunk
       return (realDispatch, realGetState) ->
         dispatch = (a) -> realDispatch extendAction 'createHistoryEntry', createHistoryEntry, wrapAction a
@@ -48,10 +48,10 @@ actionCreators =
   handlePath: (path, createHistoryEntry = true) ->
     if path is '' # initial load
       initial = Counter.reducer undefined, {}
-      return actionCreators.wrapped Counter.actionCreators.set(initial), createHistoryEntry
+      return actionCreators.forwardAction Counter.actionCreators.set(initial), createHistoryEntry
 
     number = parseInt path, 10
-    return actionCreators.wrapped Counter.actionCreators.set(number), createHistoryEntry
+    return actionCreators.forwardAction Counter.actionCreators.set(number), createHistoryEntry
 
   backToPath: (path) ->
     actionCreators.handlePath path, false
