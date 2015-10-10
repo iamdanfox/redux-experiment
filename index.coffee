@@ -53,12 +53,12 @@ unsubscribe = store.subscribe () ->
 
 # do initial page load.
 path = dropFirstSlash window.location.pathname
-store.dispatch RoutableCounter.actionCreators.handleUrl path
+store.dispatch RoutableCounter.actionCreators.handlePath path
 
 window.onpopstate = (e) ->
   # back button shouldn't insert a new history entry.
   path = dropFirstSlash window.location.pathname
-  store.dispatch RoutableCounter.actionCreators.backToUrl path
+  store.dispatch RoutableCounter.actionCreators.backToPath path
 
 
 
