@@ -1,17 +1,27 @@
 Counter = require './Counter'
 
 
-actions = { 'NESTED$' }
+prefixes = { 'NESTED$' }
 
-wrapAction = ({action, createHistoryEntry}) -> Object.assign {}, action, {type: actions.NESTED$ + action.type, createHistoryEntry}
+extendAction = (key, value, action) ->
+  extension = {}
+  extension[key] = value
+  return Object.assign {}, action, extension
+
+unextendAction = (key, originalAction) ->
+  action = Object.assign {}, originalAction
+  extension = {}
+  extension[key] = action[key]
+  delete action[key]
+  return {action, extension}
+
+wrapAction = (action) -> Object.assign {}, action, {type: prefixes.NESTED$ + action.type}
 # iff `action` was a wrapped action, return the inner action. (otherwise null)
 unwrapAction = (action) ->
-  if action.type.indexOf(actions.NESTED$) is -1
+  if action.type.indexOf(prefixes.NESTED$) is -1
     return null
 
-  innerAction = Object.assign {}, action, {type: action.type.substr(actions.NESTED$.length)}
-  delete innerAction.createHistoryEntry
-  return innerAction
+  return Object.assign {}, action, {type: action.type.substr prefixes.NESTED$.length}
 
 wrapState = (state) -> {inner: state}
 unwrapState = (state) -> state.inner
@@ -22,11 +32,11 @@ actionCreators =
   wrapped: (action, createHistoryEntry = true) ->
     if typeof action is 'function' # ie, redux-thunk
       return (realDispatch, realGetState) ->
-        dispatch = (a) -> realDispatch wrapAction {action: a, createHistoryEntry}
+        dispatch = (a) -> realDispatch extendAction 'createHistoryEntry', createHistoryEntry, wrapAction a
         getState = () -> unwrapState realGetState()
         action dispatch, getState
     else
-      return wrapAction {action, createHistoryEntry}
+      return extendAction 'createHistoryEntry', createHistoryEntry, wrapAction action
 
   handlePath: (path, createHistoryEntry = true) ->
     if path is '' # initial load
@@ -43,11 +53,13 @@ actionCreators =
 initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, createHistoryEntry: true}
 
 reducer = (state = initialState, action) ->
-  innerState = Counter.reducer unwrapState(state), unwrapAction(action) or {}
-  oldUrl = state.url
-  url = innerState.toString()
-  createHistoryEntry = (url isnt oldUrl) and (if action.createHistoryEntry? then action.createHistoryEntry else true)
-  return Object.assign wrapState(innerState), {url, createHistoryEntry}
+  actionAndExtension = unextendAction 'createHistoryEntry', unwrapAction(action) or {}
+  innerState = Counter.reducer unwrapState(state), actionAndExtension.action
+  newUrl = innerState.toString()
+  createHistoryEntry = newUrl isnt state.url
+  if actionAndExtension.extension.createHistoryEntry is false # actions can prevent history entries
+    createHistoryEntry = false
+  return Object.assign wrapState(innerState), {url: newUrl, createHistoryEntry}
 
 
 module.exports = {actionCreators, reducer, unwrapState}
