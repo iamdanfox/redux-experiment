@@ -20,9 +20,7 @@ routerUtils = ({prefix, unprefix}) ->
 
     return (state = initialState, action) ->
       innerState = innerReducer unwrapState(state), unwrapAction(action) or {}
-      newUrl = pathFromState innerState
-      pathChanged = newUrl isnt state.url
-      return Object.assign wrapState(innerState), {url: newUrl, pathChanged}
+      return Object.assign wrapState(innerState), {url: pathFromState innerState}
 
   return {unwrapState, makeActionCreators, makeReducer}
 

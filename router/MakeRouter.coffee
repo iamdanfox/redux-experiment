@@ -4,8 +4,8 @@ dropFirstSlash = (path) -> path.substr 1
 addFirstSlash = (path) -> '/' + path
 
 makeRouter = (config) ->
-  {store, handlePopStatePath, pathFromReduxState, pathChanged, fromBackButton} = config
-  unless store? and handlePopStatePath? and pathFromReduxState? and pathChanged? and fromBackButton?
+  {store, handlePopStatePath, pathFromReduxState, fromBackButton} = config
+  unless store? and handlePopStatePath? and pathFromReduxState? and fromBackButton?
     console.error "missing configuration", config
 
   return router =
@@ -17,16 +17,19 @@ makeRouter = (config) ->
       return () -> window.removeEventListener 'popstate', router.handleWindowLocation
 
     subscribeToStore: () ->
+      path = pathFromReduxState store.getState()
       return store.subscribe () ->
-        state = store.getState()
+        newPath = pathFromReduxState store.getState()
+        pathChanged = newPath isnt path
+        path = newPath
 
-        if not pathChanged(state)
+        if not pathChanged
           return # I'm not allowing discrete history steps within one URL!
 
-        if fromBackButton(state)
+        if fromBackButton store.getState()
           return
 
-        window.history.pushState null, null, addFirstSlash pathFromReduxState state
+        window.history.pushState null, null, addFirstSlash newPath
 
 startRouter = (options) ->
   {handleWindowLocation, addPopStateListener, subscribeToStore} = makeRouter options

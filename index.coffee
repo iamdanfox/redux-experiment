@@ -27,7 +27,7 @@ React.render (
 ), document.getElementById 'root'
 
 # start router
-{ startRouter } = require './redux/Router'
+{ startRouter } = require './router/MakeRouter'
 startRouter
   store: store
   handlePopStatePath: compose(actionCreators.noHistoryEntry, Routable.actionCreators.handlePath)
