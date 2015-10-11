@@ -1,44 +1,20 @@
-React = require 'react'
+
+
+
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
-{ Provider, connect } = require('react-redux')
-thunk = require('redux-thunk')
 logger = require 'redux-logger'
-
-Counter = require './redux/Counter'
-RoutableCounter = require './redux/RoutableCounter'
-{ increment, decrement, setTo7, incrementIfOdd, incrementAsync } = Counter.actionCreators
-
-# UI
-
-App = React.createClass
-  propTypes:
-    reduxState: React.PropTypes.number.isRequired
-    dispatch: React.PropTypes.func.isRequired
-
-  render: () ->
-    <p>
-      Clicked: {@props.reduxState} times
-      {' '}
-      <button onClick={() => @props.dispatch increment()}>+</button>
-      {' '}
-      <button onClick={() => @props.dispatch decrement()}>-</button>
-      {' '}
-      <button onClick={() => @props.dispatch incrementIfOdd()}>Increment if odd</button>
-      {' '}
-      <button onClick={() => @props.dispatch incrementAsync()}>Increment async</button>
-
-      <button onClick={() => @props.dispatch setTo7()}>Set to 7</button>
-    </p>
-
-
-# rootReducer = combineReducers
-#   reduxState: RoutableCounter.reducer
-
-createStoreWithMiddleware = applyMiddleware(thunk, logger())(createStore)
+thunk = require('redux-thunk')
+createStoreWithMiddleware = applyMiddleware(thunk, logger({collapsed: true}))(createStore)
 # createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+
+
+TwoRoutableCounters = require './redux/TwoRoutableCounters.coffee'
+RoutableCounter = require './redux/RoutableCounter'
 store = createStoreWithMiddleware RoutableCounter.reducer
 
 
+
+# ROUTING STUFF =========================================
 
 dropFirstSlash = (path) -> path.substr 1
 addFirstSlash = (path) -> '/' + path
@@ -49,7 +25,6 @@ unsubscribe = store.subscribe () ->
     return
 
   window.history.pushState null, null, addFirstSlash(url)
-
 
 # do initial page load.
 path = dropFirstSlash window.location.pathname
@@ -68,6 +43,9 @@ mapDispatchToProps = (realDispatch) ->
     dispatch: (action) -> realDispatch RoutableCounter.actionCreators.forwardAction action
   }
 
-ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(App)
+CounterUI = require './ui/Counter'
+{ Provider, connect } = require('react-redux')
+ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(CounterUI)
 
+React = require 'react'
 React.render <Provider store={store}>{() -> <ConnectedApp />}</Provider>, document.getElementById('root')
