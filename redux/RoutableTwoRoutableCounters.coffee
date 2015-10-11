@@ -3,32 +3,16 @@ RoutableCounter = require './RoutableCounter'
 ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('Rt$')
 
-extendAction = (extension, action) ->
-  prefixedExtension = {}
-  for key,val of extension
-    prefixedExtension[prefix key] = val
-  return Object.assign {}, action, prefixedExtension
-unextendAction = (extensionKeyObject, originalAction) ->
-  action = Object.assign {}, originalAction
-  extension = {}
-  for key,val of extensionKeyObject
-    extension[key] = action[prefix key]
-  delete action[prefix key]
-  return {action, extension}
-
 wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
-unwrapAction = (action) ->
-  return null unless (type = unprefix action.type)?
-  return Object.assign {}, action, {type}
-
+unwrapAction = (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 wrapState = (inner) -> {inner}
 unwrapState = ({inner}) -> inner
 
 actionCreators =
-  forwardAction: (actionCreatorResult, fromBackButton = false) ->
+  forwardAction: (actionCreatorResult) ->
     ThunkForwarder(
-      forwardPlain: (action) -> extendAction {fromBackButton}, wrapAction action
-      forwardDispatch: (realDispatch) -> (a) -> realDispatch extendAction {fromBackButton}, wrapAction a
+      forwardPlain: wrapAction
+      forwardDispatch: (realDispatch) -> (a) -> realDispatch wrapAction a
       forwardGetState: (realGetState) -> () -> unwrapState realGetState()
     )(actionCreatorResult)
 
@@ -41,35 +25,25 @@ actionCreators =
       dispatch actionCreators.forwardAction right(handlePath rightPath), true
       return
 
-
-lrRoutables = (innerState) ->
-  leftRoutable = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.left, innerState)
-  rightRoutable = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.right, innerState)
-  return {leftRoutable, rightRoutable}
-
-pathFromRoutables = ({leftRoutable, rightRoutable}) -> "#{leftRoutable.url}/#{rightRoutable.url}"
+pathFromState = (innerState) ->
+  l = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.left, innerState)
+  r = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.right, innerState)
+  return "#{l.url}/#{r.url}"
 
 initialState = do ->
   innerInitialState = TwoRoutableCounters.reducer undefined, {}
-  routables = lrRoutables innerInitialState
-  return Object.assign {}, wrapState(innerInitialState), {
-    url: pathFromRoutables routables
-    fromBackButton: false
-  }
+  return Object.assign {}, wrapState(innerInitialState), {url: pathFromState innerInitialState}
 
 reducer = (state = initialState, action) ->
-  actionAndExtension = unextendAction {'fromBackButton'}, unwrapAction(action) or {}
-  innerState = TwoRoutableCounters.reducer unwrapState(state), actionAndExtension.action
-  routables = lrRoutables innerState
-  newUrl = pathFromRoutables routables
+  innerState = TwoRoutableCounters.reducer unwrapState(state), unwrapAction(action) or {}
+  newUrl = pathFromState innerState
   pathChanged = newUrl isnt state.url
-  fromBackButton = if actionAndExtension.extension.fromBackButton? then actionAndExtension.extension.fromBackButton else state.fromBackButton
-  return Object.assign wrapState(innerState), {url: newUrl, pathChanged, fromBackButton}
-
+  return Object.assign wrapState(innerState), {url: newUrl, pathChanged}
 
 module.exports = {actionCreators, reducer, unwrapState}
 
 
+StoreEnhancer = require './StoreEnhancer'
 
 
 # cheeky little unit tests
@@ -77,25 +51,26 @@ module.exports = {actionCreators, reducer, unwrapState}
 thunk = require 'redux-thunk'
 # logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
-store = createStoreWithMiddleware reducer
+triple = StoreEnhancer reducer
+store = createStoreWithMiddleware triple.reducer
 
-console.assert store.getState().url is '0/0', 'initial path'
+console.assert triple.unwrapState(store.getState()).url is '0/0', 'initial path'
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
 
-store.dispatch actionCreators.backToPath 'broken'
-console.assert store.getState().url is '0/0', 'broken url redirected to initial'
-
-store.dispatch actionCreators.backToPath '0/1'
-console.assert unwrapState(store.getState()).left.inner is 0, 'left should have stayed zero'
-console.assert unwrapState(store.getState()).right.inner is 1, 'right should have updated to 1'
-
-store.dispatch actionCreators.backToPath '1/0'
-console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
-console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
+store.dispatch triple.actionCreators.noHistoryEntry actionCreators.backToPath('broken')
+console.assert triple.unwrapState(store.getState()).url is '0/0', 'broken url redirected to initial'
 console.assert store.getState().fromBackButton, 'even though two actions were triggered, we still shouldnt add to history'
+
+store.dispatch triple.actionCreators.noHistoryEntry actionCreators.backToPath('0/1')
+console.assert unwrapState(triple.unwrapState(store.getState())).left.inner is 0, 'left should have stayed zero'
+console.assert unwrapState(triple.unwrapState(store.getState())).right.inner is 1, 'right should have updated to 1'
+
+store.dispatch triple.actionCreators.noHistoryEntry actionCreators.backToPath('1/0')
+console.assert unwrapState(triple.unwrapState(store.getState())).left.inner is 1, 'left should have updated'
+console.assert unwrapState(triple.unwrapState(store.getState())).right.inner is 0, 'right should have stayed at zero'
 
 {left, right} = require('./TwoRoutableCounters').actionCreators
 {increment} = require('./Counter.coffee').actionCreators
-store.dispatch actionCreators.forwardAction left require('./RoutableCounter').actionCreators.forwardAction increment()
-console.assert unwrapState(store.getState()).left.inner is 2, 'left should have updated'
-console.assert store.getState().fromBackButton is false, 'a movement forwards'
+store.dispatch triple.actionCreators.historyEntry actionCreators.forwardAction left require('./RoutableCounter').actionCreators.forwardAction increment()
+console.assert unwrapState(triple.unwrapState(store.getState())).left.inner is 2, 'left should have updated'
+console.assert store.getState().fromBackButton is false, 'a movement forwards adds to history'
