@@ -1,6 +1,6 @@
 TwoRoutableCounters = require './TwoRoutableCounters'
 RoutableCounter = require './RoutableCounter'
-# ThunkForwarder = require './ThunkForwarder'
+ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('Rt$')
 
 
@@ -29,11 +29,19 @@ unwrapState = ({inner}) -> inner
 
 
 actionCreators =
-  forwardAction: RoutableCounter.actionCreators.forwardAction
+  forwardAction: (actionCreatorResult, createHistoryEntry = true) ->
+    ThunkForwarder(
+      forwardPlain: (action) -> extendAction 'createHistoryEntry', createHistoryEntry, wrapAction action
+      forwardDispatch: (realDispatch) -> (a) -> realDispatch extendAction 'createHistoryEntry', createHistoryEntry, wrapAction a
+      forwardGetState: (realGetState) -> () -> unwrapState realGetState()
+    )(actionCreatorResult)
 
   handlePath: (path, createHistoryEntry = true) ->
-    [leftPath, rightPath] = path.split /\//
-    return actionCreators.forwardAction TwoRoutableCounters.actionCreators.left(RoutableCounter.actionCreators.handlePath leftPath), createHistoryEntry
+    (dispatch, getState) ->
+      [leftPath, rightPath] = path.split /\//
+      dispatch actionCreators.forwardAction TwoRoutableCounters.actionCreators.left(RoutableCounter.actionCreators.handlePath leftPath), createHistoryEntry
+      dispatch actionCreators.forwardAction TwoRoutableCounters.actionCreators.right(RoutableCounter.actionCreators.handlePath rightPath), createHistoryEntry
+      return
 
   backToPath: (path) ->
     actionCreators.handlePath path, false
@@ -61,9 +69,11 @@ reducer = (state = initialState, action) ->
   routables = lrRoutables innerState
   newUrl = pathFromRoutables routables
 
+  # console.log action.type, 'isnt', newUrl, state.url
   createHistoryEntry = newUrl isnt state.url
-  if createHistoryEntryFromRoutables(routables) is false # actions can prevent history entries
-    createHistoryEntry = false
+  # console.log action.type, newUrl, routables, createHistoryEntryFromRoutables routables
+  # if createHistoryEntryFromRoutables(routables) is false # actions can prevent history entries
+  #   createHistoryEntry = false
   return Object.assign wrapState(innerState), {url: newUrl, createHistoryEntry}
 
 
@@ -76,22 +86,34 @@ createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware reducer
 
 console.assert store.getState().url is '0/0', 'initial path'
-console.assert store.getState().createHistoryEntry is false, 'no history entries initially!'
+# console.assert store.getState().createHistoryEntry is false, 'no history entries initially!'
 
 store.dispatch actionCreators.handlePath '1/0'
 console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
 console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
+# console.log store.getState()
+# console.assert store.getState().createHistoryEntry, 'should update history'
+
+# store.dispatch actionCreators.handlePath '0/1'
+# console.assert unwrapState(store.getState()).left.inner is 0, 'left should have stayed zero'
+# console.assert unwrapState(store.getState()).right.inner is 1, 'right should have updated to 1'
+# console.assert store.getState().createHistoryEntry, 'should update history'
+#
+# store.dispatch actionCreators.backToPath '1/0'
+# console.log actionCreators.backToPath('1/0') (a) -> console.log a
+# console.log store.getState()
+# console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
+# console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
+# console.assert unwrapState(store.getState()).createHistoryEntry is false, 'should not create history entry for a back action'
 
 
 # console.assert unwrapState(store.getState()) is 1, 'state has changed after handlePath'
 # console.assert store.getState().url is '1', 'url has changed'
 # console.assert store.getState().createHistoryEntry is true, 'should create history entries by default'
 #
-# store.dispatch actionCreators.backToPath '0'
 #
 # console.assert unwrapState(store.getState()) is 0, 'state has changed after backToPath'
 # console.assert store.getState().url is '0', 'url has changed'
-# console.assert store.getState().createHistoryEntry is false, 'should not create history entry for a back action'
 #
 # store.dispatch {type:'UNKNOWN'}
 #
