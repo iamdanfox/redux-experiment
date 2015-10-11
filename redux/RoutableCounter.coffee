@@ -40,6 +40,7 @@ actionCreators =
       return actionCreators.forwardAction Counter.actionCreators.set(initial), fromBackButton
 
     number = parseInt path, 10
+    if isNaN(number) then number = Counter.reducer undefined, {}
     return actionCreators.forwardAction Counter.actionCreators.set(number), fromBackButton
 
   backToPath: (path) ->
@@ -67,6 +68,9 @@ console.assert unwrapState(store.getState()) is 0, 'initial state'
 console.assert store.getState().url is '0', 'initial url '
 console.assert store.getState().fromBackButton is false, 'initially not from back button'
 console.assert store.getState().pathChanged is true, 'path did change initially'
+
+store.dispatch actionCreators.handlePath 'broken'
+console.assert store.getState().url is '0', 'broken url redirected to initial'
 
 store.dispatch actionCreators.handlePath '1'
 

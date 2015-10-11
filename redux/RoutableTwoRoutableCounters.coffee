@@ -44,7 +44,7 @@ actionCreators =
       return
 
   backToPath: (path) ->
-    actionCreators.handlePath path, false
+    actionCreators.handlePath path, true
 
 
 lrRoutables = (innerState) ->
@@ -53,17 +53,13 @@ lrRoutables = (innerState) ->
   return {leftRoutable, rightRoutable}
 
 pathFromRoutables = ({leftRoutable, rightRoutable}) -> "#{leftRoutable.url}/#{rightRoutable.url}"
-backButtonFromRoutables = ({leftRoutable, rightRoutable}) ->
-  return false if leftRoutable.fromBackButton is false
-  return false if rightRoutable.fromBackButton is false
-  return true
 
 initialState = do ->
   innerInitialState = TwoRoutableCounters.reducer undefined, {}
   routables = lrRoutables innerInitialState
   return Object.assign {}, wrapState(innerInitialState), {
-    url: pathFromRoutables routables,
-    fromBackButton: backButtonFromRoutables routables
+    url: pathFromRoutables routables
+    fromBackButton: false
   }
 
 reducer = (state = initialState, action) ->
@@ -72,10 +68,8 @@ reducer = (state = initialState, action) ->
   routables = lrRoutables innerState
   newUrl = pathFromRoutables routables
   pathChanged = newUrl isnt state.url
-  # console.log action.type, newUrl, routables, backButtonFromRoutables routables
-  # if backButtonFromRoutables(routables) is false # actions can prevent history entries
-  #   fromBackButton = false
-  return Object.assign wrapState(innerState), {url: newUrl, pathChanged}
+  fromBackButton = if actionAndExtension.extension.fromBackButton? then actionAndExtension.extension.fromBackButton else state.fromBackButton
+  return Object.assign wrapState(innerState), {url: newUrl, pathChanged, fromBackButton}
 
 
 module.exports = {actionCreators, reducer, unwrapState}
@@ -83,30 +77,38 @@ module.exports = {actionCreators, reducer, unwrapState}
 # cheeky little unit tests
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
+# logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware reducer
 
-# console.assert store.getState().url is '0/0', 'initial path'
-# console.assert store.getState().fromBackButton is false, 'no history entries initially!'
+console.assert store.getState().url is '0/0', 'initial path'
+console.assert store.getState().fromBackButton is false, 'no history entries initially!'
 
-# store.dispatch actionCreators.handlePath '1/0'
-# console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
-# console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
-# console.log store.getState()
-# console.assert store.getState().fromBackButton, 'should update history'
 
-# store.dispatch actionCreators.handlePath '0/1'
-# console.assert unwrapState(store.getState()).left.inner is 0, 'left should have stayed zero'
-# console.assert unwrapState(store.getState()).right.inner is 1, 'right should have updated to 1'
-# console.assert store.getState().fromBackButton, 'should update history'
-#
-# store.dispatch actionCreators.backToPath '1/0'
-# console.log actionCreators.backToPath('1/0') (a) -> console.log a
-# console.log store.getState()
-# console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
-# console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
-# console.assert unwrapState(store.getState()).fromBackButton is false, 'should not create history entry for a back action'
+store.dispatch actionCreators.handlePath 'broken'
+console.log store.getState()
+console.assert store.getState().url is '0/0', 'broken url redirected to initial'
 
+store.dispatch actionCreators.handlePath '1/0'
+console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
+console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
+console.assert store.getState().fromBackButton is false, 'should update history'
+
+store.dispatch actionCreators.handlePath '0/1'
+console.assert unwrapState(store.getState()).left.inner is 0, 'left should have stayed zero'
+console.assert unwrapState(store.getState()).right.inner is 1, 'right should have updated to 1'
+console.assert store.getState().fromBackButton is false, 'should update history'
+
+store.dispatch actionCreators.backToPath '1/0'
+console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
+console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
+console.assert store.getState().fromBackButton, 'even though two actions were triggered, we still shouldnt add to history'
+
+{left, right} = require('./TwoRoutableCounters').actionCreators
+{increment} = require('./Counter.coffee').actionCreators
+store.dispatch actionCreators.forwardAction left require('./RoutableCounter').actionCreators.forwardAction increment()
+console.assert unwrapState(store.getState()).left.inner is 2, 'left should have updated'
+console.assert store.getState().fromBackButton is false, 'a movement forwards'
 
 # console.assert unwrapState(store.getState()) is 1, 'state has changed after handlePath'
 # console.assert store.getState().url is '1', 'url has changed'
