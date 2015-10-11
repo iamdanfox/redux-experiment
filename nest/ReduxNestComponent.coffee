@@ -1,9 +1,9 @@
 React = require 'react'
 
-ReduxNestComponent = ({inner, unwrapState, wrap}) ->
+ReduxNestComponent = ({inner, unwrapState, innerAction}) ->
 
-  unless inner? and (typeof unwrapState is 'function') and (typeof wrap is 'function')
-    throw "ReduxNestComponent requires inner, unwrapState and wrap parameters"
+  unless inner? and (typeof unwrapState is 'function') and (typeof innerAction is 'function')
+    throw "ReduxNestComponent requires inner, unwrapState and innerAction parameters"
 
   return React.createClass
     displayName: 'ReduxNestComponent'
@@ -15,7 +15,7 @@ ReduxNestComponent = ({inner, unwrapState, wrap}) ->
     render: () ->
       props =
         reduxState: unwrapState @props.reduxState
-        dispatch: (action) => @props.dispatch wrap action
+        dispatch: (action) => @props.dispatch innerAction action
 
       Inner = inner
       <Inner {...props} />

@@ -8,7 +8,7 @@ makePathAugmenter = ({prefix, unprefix, nestActionCreator}) ->
     unwrapState: unwrapState
 
     makeActionCreators: ({handlePath}) ->
-      wrap: nestActionCreator {unwrapState, wrapAction: wrapAction prefix}
+      innerAction: nestActionCreator {unwrapState, wrapAction: wrapAction prefix}
       handlePath: handlePath
 
     extendReducer: (innerReducer, keyToMapperObject) ->

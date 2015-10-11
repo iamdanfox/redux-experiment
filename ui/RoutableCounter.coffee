@@ -3,6 +3,6 @@ reduxNestComponent = require '../nest/ReduxNestComponent'
 RoutableCounter = reduxNestComponent
   inner: require './Counter'
   unwrapState: unwrapState
-  wrap: actionCreators.wrap
+  innerAction: actionCreators.innerAction
 
 module.exports = RoutableCounter

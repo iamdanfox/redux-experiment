@@ -5,11 +5,11 @@ actionCreators = pathAugmenter.makeActionCreators
   handlePath: (path) ->
     if path is '' # initial load
       initial = Counter.reducer undefined, {}
-      return actionCreators.wrap Counter.actionCreators.set(initial)
+      return actionCreators.innerAction Counter.actionCreators.set(initial)
 
     number = parseInt path, 10
     if isNaN(number) then number = Counter.reducer undefined, {}
-    return actionCreators.wrap Counter.actionCreators.set(number)
+    return actionCreators.innerAction Counter.actionCreators.set number
 
 pathFromState = (state) -> state.toString()
 

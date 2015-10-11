@@ -5,13 +5,13 @@ RoutableCounter = require './RoutableCounter'
 
 actionCreators = pathAugmenter.makeActionCreators
   handlePath: (path) ->
-    {wrap} = actionCreators
+    {innerAction} = actionCreators
     {left, right} = TwoRoutableCounters.actionCreators
     {handlePath} = RoutableCounter.actionCreators
     return (dispatch, getState) ->
       [leftPath, rightPath] = path.split /\//
-      dispatch wrap left handlePath leftPath
-      dispatch wrap right handlePath rightPath
+      dispatch innerAction left handlePath leftPath
+      dispatch innerAction right handlePath rightPath
       return
 
 pathFromState = (innerState) ->
@@ -52,6 +52,6 @@ console.assert pathAugmenter.unwrapState(triple.unwrapState(store.getState())).r
 
 {left, right} = require('./TwoRoutableCounters').actionCreators
 {increment} = require('./Counter.coffee').actionCreators
-store.dispatch triple.actionCreators.historyEntry actionCreators.wrap left require('./RoutableCounter').actionCreators.wrap increment()
+store.dispatch triple.actionCreators.historyEntry actionCreators.innerAction left require('./RoutableCounter').actionCreators.innerAction increment()
 console.assert pathAugmenter.unwrapState(triple.unwrapState(store.getState())).left.inner is 2, 'left should have updated'
 console.assert store.getState().fromBackButton is false, 'a movement forwards adds to history'

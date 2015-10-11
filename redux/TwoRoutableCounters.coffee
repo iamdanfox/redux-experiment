@@ -57,7 +57,7 @@ store = createStoreWithMiddleware reducer
 
 console.assert RoutableCounter.unwrapState(store.getState().left) is 0, 'initial state'
 
-store.dispatch actionCreators.left RoutableCounter.actionCreators.wrap Counter.actionCreators.increment()
-store.dispatch actionCreators.left RoutableCounter.actionCreators.wrap Counter.actionCreators.incrementIfOdd()
+store.dispatch actionCreators.left RoutableCounter.actionCreators.innerAction Counter.actionCreators.increment()
+store.dispatch actionCreators.left RoutableCounter.actionCreators.innerAction Counter.actionCreators.incrementIfOdd()
 
 console.assert RoutableCounter.unwrapState(store.getState().left) is 2, 'thunk forwarding works!'
