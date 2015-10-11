@@ -86,7 +86,6 @@ console.assert store.getState().url is '0/0', 'initial path'
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
 
 store.dispatch actionCreators.handlePath 'broken'
-console.log store.getState()
 console.assert store.getState().url is '0/0', 'broken url redirected to initial'
 
 store.dispatch actionCreators.handlePath '1/0'

@@ -1,44 +1,22 @@
-{ createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
+{ createStore, applyMiddleware } = require('redux')
 logger = require 'redux-logger'
 thunk = require('redux-thunk')
-
-{ reducer } = require './redux/RoutableTwoRoutableCounters'
-{ handlePath, backToPath } = require('./redux/RoutableTwoRoutableCounters').actionCreators
+{ reducer, actionCreators } = require './redux/RoutableTwoRoutableCounters'
 UI = require './ui/RoutableTwoRoutableCounters'
-
-# INITIALIZATION =========================================
-
-createStoreWithMiddleware = applyMiddleware(thunk, logger({collapsed: true}))(createStore)
-store = createStoreWithMiddleware reducer
-mapStateToProps = (reduxState) -> {reduxState}
-mapDispatchToProps = (dispatch) -> {dispatch}
-
-{ Provider, connect } = require('react-redux')
-ConnectedUI = connect(mapStateToProps, mapDispatchToProps)(UI)
-
 React = require 'react'
-React.render <Provider store={store}>{() -> <ConnectedUI />}</Provider>, document.getElementById('root')
+{ Provider, connect } = require('react-redux')
+Router = require './redux/Router'
 
-# ROUTING STUFF =========================================
+store = applyMiddleware(thunk, logger {collapsed: true})(createStore) reducer
 
-dropFirstSlash = (path) -> path.substr 1
-addFirstSlash = (path) -> '/' + path
+stateToProps = (reduxState) -> {reduxState}
+dispatchToProps = (dispatch) -> {dispatch}
+ConnectedUI = connect(stateToProps, dispatchToProps) UI
 
-unsubscribe = store.subscribe () ->
-  { url, pathChanged, fromBackButton } = store.getState()
-  if not pathChanged
-    return # I'm not allowing discrete history steps within one URL!
+React.render (
+  <Provider store={store}>
+    {() -> <ConnectedUI />}
+  </Provider>
+), document.getElementById 'root'
 
-  if fromBackButton
-    return
-
-  window.history.pushState null, null, addFirstSlash(url)
-
-# do initial page load.
-path = dropFirstSlash window.location.pathname
-store.dispatch handlePath path
-
-window.onpopstate = (e) ->
-  # back button shouldn't insert a new history entry.
-  path = dropFirstSlash window.location.pathname
-  store.dispatch backToPath path
+Router store, actionCreators.backToPath
