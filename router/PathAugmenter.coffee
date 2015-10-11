@@ -1,4 +1,4 @@
-ThunkForwarder = require './ThunkForwarder'
+ThunkForwarder = require '../redux/ThunkForwarder'
 DefaultPrefixer = require('../nest/MakePrefixer')('PA-')
 
 

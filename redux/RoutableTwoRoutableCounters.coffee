@@ -1,6 +1,6 @@
 TwoRoutableCounters = require './TwoRoutableCounters'
 RoutableCounter = require './RoutableCounter'
-{ pathAugmenter } = require './PathAugmenter'
+{ pathAugmenter } = require '../router/PathAugmenter'
 
 
 actionCreators = pathAugmenter.makeActionCreators

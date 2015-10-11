@@ -1,5 +1,5 @@
 Counter = require './Counter'
-{ pathAugmenter } = require './PathAugmenter'
+{ pathAugmenter } = require '../router/PathAugmenter'
 
 actionCreators = pathAugmenter.makeActionCreators
   handlePath: (path) ->
