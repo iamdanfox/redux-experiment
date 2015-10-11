@@ -1,38 +1,40 @@
 { compose } = require 'redux'
 ThunkForwarder = require './ThunkForwarder'
-{ prefix, unprefix } = require('./Prefixer')('fromBack$')
+HistoryEntryPrefixer = require('./Prefixer')('history$')
+NoHistoryPrefixer = require('./Prefixer')('nohistory$')
+prefixExtensionKey = require('./Prefixer')('historyAware$').prefix
 
 
 extendAction = (extension) -> (action) ->
   prefixedExtension = {}
   for key,val of extension
-    prefixedExtension[prefix key] = val
+    prefixedExtension[prefixExtensionKey key] = val
   return Object.assign {}, action, prefixedExtension
 unextendAction = (extensionKeyObject, originalAction) ->
   action = Object.assign {}, originalAction
   extension = {}
   for key,val of extensionKeyObject
-    extension[key] = action[prefix key]
-  delete action[prefix key]
+    extension[key] = action[prefixExtensionKey key]
+  delete action[prefixExtensionKey key]
   return {action, extension}
-
-wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
-unwrapAction = (action) ->
-  return null unless (type = unprefix action.type)?
-  return Object.assign {}, action, {type}
 
 wrapState = (inner) -> {inner}
 unwrapState = ({inner}) -> inner
 
-wrapAndExtendWith = (fromBackButton) -> (actionCreatorResult) ->
-  ThunkForwarder(
-    wrapAction: compose extendAction({fromBackButton}), wrapAction
-    unwrapState: unwrapState
-  )(actionCreatorResult)
-
 actionCreators =
-  historyEntry: wrapAndExtendWith false
-  noHistoryEntry: wrapAndExtendWith true
+  historyEntry:  (actionCreatorResult) ->
+    wrapAction = (action) -> Object.assign {}, action, {type: HistoryEntryPrefixer.prefix action.type}
+    ThunkForwarder(
+      wrapAction: compose extendAction({fromBackButton: false}), wrapAction
+      unwrapState: unwrapState
+    )(actionCreatorResult)
+
+  noHistoryEntry:  (actionCreatorResult) ->
+    wrapAction = (action) -> Object.assign {}, action, {type: NoHistoryPrefixer.prefix action.type}
+    ThunkForwarder(
+      wrapAction: compose extendAction({fromBackButton: true}), wrapAction
+      unwrapState: unwrapState
+    )(actionCreatorResult)
 
 reactUtils =
   stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
@@ -46,10 +48,23 @@ makeBackButtonAware = (innerReducer) ->
     return Object.assign {}, wrapState(innerInitialState), {fromBackButton: false}
 
   reducer = (state = initialState, action) ->
-    actionAndExtension = unextendAction {'fromBackButton'}, unwrapAction(action) or {}
-    innerState = innerReducer unwrapState(state), actionAndExtension.action
-    fromBackButton = if actionAndExtension.extension.fromBackButton? then actionAndExtension.extension.fromBackButton else state.fromBackButton
-    return Object.assign wrapState(innerState), {fromBackButton}
+    unwrapForwardAction = (action) ->
+      return null unless (type = HistoryEntryPrefixer.unprefix action.type)?
+      return Object.assign {}, action, {type}
+
+    unwrapBackAction = (action) ->
+      return null unless (type = NoHistoryPrefixer.unprefix action.type)?
+      return Object.assign {}, action, {type}
+
+    if (a = unwrapForwardAction action)
+      innerState = innerReducer unwrapState(state), a
+      return Object.assign wrapState(innerState), {fromBackButton: false}
+
+    if (a = unwrapBackAction action)
+      innerState = innerReducer unwrapState(state), a
+      return Object.assign wrapState(innerState), {fromBackButton: true}
+
+    return state
 
   return {actionCreators, reducer, unwrapState}
 
@@ -62,14 +77,15 @@ module.exports = { makeBackButtonAware, reactUtils }
 # cheeky little unit tests
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
-# logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+# createStoreWithMiddleware = applyMiddleware(thunk, require('redux-logger')())(createStore)
 someReducer = require('../redux/Counter').reducer
 triple = makeBackButtonAware someReducer
 store = createStoreWithMiddleware triple.reducer
 
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
 
-store.dispatch triple.actionCreators.noHistoryEntry {}
-console.assert store.getState().fromBackButton, 'true is persisted'
+store.dispatch triple.actionCreators.noHistoryEntry {type:'FAKE'}
+
+console.assert store.getState().fromBackButton, 'noHistory entry should be saved in fromBackButton'
 console.assert triple.unwrapState(store.getState()) is someReducer(undefined, {}), 'contained redux store all happy'
