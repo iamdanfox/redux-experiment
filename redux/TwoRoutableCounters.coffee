@@ -23,11 +23,11 @@ unwrapState = (side, state) -> state[side]
 actionCreators =
   left: ThunkForwarder
     wrapAction: (action) -> wrapAction sides.left, action
-    forwardGetState: (realGetState) -> unwrapState sides.left, realGetState
+    unwrapState: (realGetState) -> unwrapState sides.left, realGetState
 
   right: ThunkForwarder
     wrapAction: (action) -> wrapAction sides.right, action
-    forwardGetState: (realGetState) -> unwrapState sides.right, realGetState
+    unwrapState: (realGetState) -> unwrapState sides.right, realGetState
 
 initialState =
   left: RoutableCounter.reducer undefined, {}
