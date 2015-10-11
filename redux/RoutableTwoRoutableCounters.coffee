@@ -1,30 +1,28 @@
 TwoRoutableCounters = require './TwoRoutableCounters'
 RoutableCounter = require './RoutableCounter'
-internalReducer = TwoRoutableCounters.reducer
 # ThunkForwarder = require './ThunkForwarder'
-# { prefix, unprefix } = require('./Prefixer')('Rt$')
-
-
-#
+{ prefix, unprefix } = require('./Prefixer')('Rt$')
 
 
 
-# extendAction = (key, value, action) ->
-#   extension = {}
-#   extension[prefix key] = value
-#   return Object.assign {}, action, extension
-# unextendAction = (key, originalAction) ->
-#   action = Object.assign {}, originalAction
-#   extension = {}
-#   extension[key] = action[prefix key]
-#   delete action[prefix key]
-#   return {action, extension}
-#
-# wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
-# unwrapAction = (action) ->
-#   return null unless (type = unprefix action.type)?
-#   return Object.assign {}, action, {type}
-#
+
+
+extendAction = (key, value, action) ->
+  extension = {}
+  extension[prefix key] = value
+  return Object.assign {}, action, extension
+unextendAction = (key, originalAction) ->
+  action = Object.assign {}, originalAction
+  extension = {}
+  extension[key] = action[prefix key]
+  delete action[prefix key]
+  return {action, extension}
+
+wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
+unwrapAction = (action) ->
+  return null unless (type = unprefix action.type)?
+  return Object.assign {}, action, {type}
+
 wrapState = (inner) -> {inner}
 unwrapState = ({inner}) -> inner
 
@@ -41,31 +39,42 @@ actionCreators =
     actionCreators.handlePath path, false
 
 
-initialState = do ->
-  innerInitialState = internalReducer undefined, {}
-  leftRoutable = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.left, innerInitialState)
-  rightRoutable = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.right, innerInitialState)
-  url = "#{leftRoutable.url}/#{rightRoutable.url}"
-  createHistoryEntry = leftRoutable.createHistoryEntry or rightRoutable.createHistoryEntry
-  return Object.assign {}, wrapState(innerInitialState), {url, createHistoryEntry}
+lrRoutables = (innerState) ->
+  leftRoutable = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.left, innerState)
+  rightRoutable = TwoRoutableCounters.unwrapState(TwoRoutableCounters.sides.right, innerState)
+  return {leftRoutable, rightRoutable}
 
-console.log initialState
-# reducer = (state = initialState, action) ->
-#   actionAndExtension = unextendAction 'createHistoryEntry', unwrapAction(action) or {}
-#   innerState = internalReducer unwrapState(state), actionAndExtension.action
-#   newUrl = innerState.left + '/' +
-#   createHistoryEntry = newUrl isnt state.url
-#   if actionAndExtension.extension.createHistoryEntry is false # actions can prevent history entries
-#     createHistoryEntry = false
-#   return Object.assign wrapState(innerState), {url: newUrl, createHistoryEntry}
-#
-#
-# module.exports = {actionCreators, reducer, unwrapState}
-#
-# # cheeky little unit tests
-#
-# { createStore } = require 'redux'
-# store = createStore reducer
+pathFromRoutables = ({leftRoutable, rightRoutable}) -> "#{leftRoutable.url}/#{rightRoutable.url}"
+createHistoryEntryFromRoutables = ({leftRoutable, rightRoutable}) -> leftRoutable.createHistoryEntry or rightRoutable.createHistoryEntry
+
+initialState = do ->
+  innerInitialState = TwoRoutableCounters.reducer undefined, {}
+  routables = lrRoutables innerInitialState
+  return Object.assign {}, wrapState(innerInitialState), {
+    url: pathFromRoutables routables,
+    createHistoryEntry: createHistoryEntryFromRoutables routables
+  }
+
+reducer = (state = initialState, action) ->
+  actionAndExtension = unextendAction 'createHistoryEntry', unwrapAction(action) or {}
+  innerState = TwoRoutableCounters.reducer unwrapState(state), actionAndExtension.action
+  routables = lrRoutables innerState
+  newUrl = pathFromRoutables routables
+
+  createHistoryEntry = newUrl isnt state.url
+  if createHistoryEntryFromRoutables(routables) is false # actions can prevent history entries
+    createHistoryEntry = false
+  return Object.assign wrapState(innerState), {url: newUrl, createHistoryEntry}
+
+
+module.exports = {actionCreators, reducer, unwrapState}
+
+# cheeky little unit tests
+{ createStore, applyMiddleware } = require 'redux'
+thunk = require 'redux-thunk'
+createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
+store = createStoreWithMiddleware reducer
+
 # console.assert unwrapState(store.getState()) is 0, 'initial state'
 # console.assert store.getState().url is '0', 'initial url '
 #
