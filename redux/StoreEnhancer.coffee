@@ -1,10 +1,11 @@
+{ compose } = require 'redux'
 ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('fromBack$')
 
 enhance = (innerReducer) ->
   throw "StoreEnhancer must be called with a reducer argument" unless typeof innerReducer is 'function'
 
-  extendAction = (extension, action) ->
+  extendAction = (extension) -> (action) ->
     prefixedExtension = {}
     for key,val of extension
       prefixedExtension[prefix key] = val
@@ -27,7 +28,7 @@ enhance = (innerReducer) ->
 
   forward = (fromBackButton) -> (actionCreatorResult) ->
     ThunkForwarder(
-      wrapAction: (action) -> extendAction {fromBackButton}, wrapAction action
+      wrapAction: compose extendAction({fromBackButton}), wrapAction
       unwrapState: unwrapState
     )(actionCreatorResult)
 
