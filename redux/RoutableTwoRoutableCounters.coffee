@@ -33,7 +33,7 @@ actionCreators =
 
   handlePath: (path, createHistoryEntry = true) ->
     [leftPath, rightPath] = path.split /\//
-    return actionCreators.forwardAction TwoRoutableCounters.actionCreators.left(RoutableCounter.handlePath leftPath), createHistoryEntry
+    return actionCreators.forwardAction TwoRoutableCounters.actionCreators.left(RoutableCounter.actionCreators.handlePath leftPath), createHistoryEntry
 
   backToPath: (path) ->
     actionCreators.handlePath path, false
@@ -75,11 +75,14 @@ thunk = require 'redux-thunk'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 store = createStoreWithMiddleware reducer
 
-# console.assert unwrapState(store.getState()) is 0, 'initial state'
-# console.assert store.getState().url is '0', 'initial url '
-#
-# store.dispatch actionCreators.handlePath '1'
-#
+console.assert store.getState().url is '0/0', 'initial path'
+console.assert store.getState().createHistoryEntry is false, 'no history entries initially!'
+
+store.dispatch actionCreators.handlePath '1/0'
+console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
+console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
+
+
 # console.assert unwrapState(store.getState()) is 1, 'state has changed after handlePath'
 # console.assert store.getState().url is '1', 'url has changed'
 # console.assert store.getState().createHistoryEntry is true, 'should create history entries by default'
