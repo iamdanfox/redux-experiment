@@ -1,10 +1,10 @@
 { compose } = require 'redux'
 
 
-thunkForwarder = ({forwardPlain, forwardDispatch, forwardGetState}) ->
+thunkForwarder = ({forwardPlain, forwardGetState}) ->
   (actionCreatorResult) ->
     if typeof actionCreatorResult is 'function' # ie, redux-thunk
-      return (dispatch, getState) -> actionCreatorResult forwardDispatch(dispatch), forwardGetState(getState)
+      return (dispatch, getState) -> actionCreatorResult ((a) -> dispatch forwardPlain a), forwardGetState(getState)
     else
       return forwardPlain actionCreatorResult
 

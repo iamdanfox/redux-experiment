@@ -11,7 +11,6 @@ actionCreators =
   forwardAction: (actionCreatorResult) ->
     ThunkForwarder(
       forwardPlain: wrapAction
-      forwardDispatch: (realDispatch) -> (a) -> realDispatch wrapAction a
       forwardGetState: (realGetState) -> () -> unwrapState realGetState()
     )(actionCreatorResult)
 

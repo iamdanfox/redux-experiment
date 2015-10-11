@@ -23,12 +23,10 @@ unwrapState = (side, state) -> state[side]
 actionCreators =
   left: ThunkForwarder
     forwardPlain: (action) -> wrapAction sides.left, action
-    forwardDispatch: (realDispatch) -> (a) -> realDispatch wrapAction sides.left, a
     forwardGetState: (realGetState) -> () -> unwrapState sides.left, realGetState()
 
   right: ThunkForwarder
     forwardPlain: (action) -> wrapAction sides.right, action
-    forwardDispatch: (realDispatch) -> (a) -> realDispatch wrapAction sides.right, a
     forwardGetState: (realGetState) -> () -> unwrapState sides.right, realGetState()
 
 initialState =
