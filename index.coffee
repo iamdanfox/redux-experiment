@@ -27,7 +27,7 @@ React.render (
   </Provider>
 ), document.getElementById 'root'
 
-Router store, compose(actionCreators.noHistoryEntry, Routable.actionCreators.backToPath),
+Router store, compose(actionCreators.noHistoryEntry, Routable.actionCreators.handlePath),
   url: (state) -> unwrapState(state).url
   pathChanged: (state) -> unwrapState(state).pathChanged
   fromBackButton: (state) -> state.fromBackButton

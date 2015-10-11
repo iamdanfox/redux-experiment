@@ -1,7 +1,7 @@
 dropFirstSlash = (path) -> path.substr 1
 addFirstSlash = (path) -> '/' + path
 
-Router = (store, backToPath, selectors) ->
+Router = (store, handlePath, selectors) ->
 
   stop = store.subscribe () ->
     { url, pathChanged, fromBackButton } = selectors
@@ -20,10 +20,10 @@ Router = (store, backToPath, selectors) ->
     window.history.pushState null, null, addFirstSlash url state
 
   # do initial page load, without adding a history item
-  store.dispatch backToPath dropFirstSlash window.location.pathname
+  store.dispatch handlePath dropFirstSlash window.location.pathname
 
   window.onpopstate = () ->
-    store.dispatch backToPath dropFirstSlash window.location.pathname
+    store.dispatch handlePath dropFirstSlash window.location.pathname
 
   # return {stop} # TODO: make this detatch the onpopstate lister too
   return

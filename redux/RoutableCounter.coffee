@@ -58,7 +58,7 @@ console.assert store.getState().pathChanged is true, 'path changed from 0 to 1'
 
 store.dispatch actionCreators.handlePath '0'
 
-console.assert unwrapState(store.getState()) is 0, 'state has changed after backToPath'
+console.assert unwrapState(store.getState()) is 0, 'state has changed after handlePath'
 console.assert store.getState().url is '0', 'url has changed'
 
 store.dispatch actionCreators.handlePath '0'

@@ -16,7 +16,7 @@ actionCreators =
       forwardGetState: (realGetState) -> () -> unwrapState realGetState()
     )(actionCreatorResult)
 
-  backToPath: (path) ->
+  handlePath: (path) ->
     {left, right} = TwoRoutableCounters.actionCreators
     {handlePath} = RoutableCounter.actionCreators
     return (dispatch, getState) ->
@@ -55,15 +55,15 @@ store = createStoreWithMiddleware triple.reducer
 console.assert triple.unwrapState(store.getState()).url is '0/0', 'initial path'
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
 
-store.dispatch triple.actionCreators.noHistoryEntry actionCreators.backToPath('broken')
+store.dispatch triple.actionCreators.noHistoryEntry actionCreators.handlePath('broken')
 console.assert triple.unwrapState(store.getState()).url is '0/0', 'broken url redirected to initial'
 console.assert store.getState().fromBackButton, 'even though two actions were triggered, we still shouldnt add to history'
 
-store.dispatch triple.actionCreators.noHistoryEntry actionCreators.backToPath('0/1')
+store.dispatch triple.actionCreators.noHistoryEntry actionCreators.handlePath('0/1')
 console.assert unwrapState(triple.unwrapState(store.getState())).left.inner is 0, 'left should have stayed zero'
 console.assert unwrapState(triple.unwrapState(store.getState())).right.inner is 1, 'right should have updated to 1'
 
-store.dispatch triple.actionCreators.noHistoryEntry actionCreators.backToPath('1/0')
+store.dispatch triple.actionCreators.noHistoryEntry actionCreators.handlePath('1/0')
 console.assert unwrapState(triple.unwrapState(store.getState())).left.inner is 1, 'left should have updated'
 console.assert unwrapState(triple.unwrapState(store.getState())).right.inner is 0, 'right should have stayed at zero'
 
