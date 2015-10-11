@@ -1,18 +1,12 @@
-
-
-
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 logger = require 'redux-logger'
 thunk = require('redux-thunk')
 createStoreWithMiddleware = applyMiddleware(thunk, logger({collapsed: true}))(createStore)
 # createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 
-
 TwoRoutableCounters = require './redux/TwoRoutableCounters.coffee'
 RoutableCounter = require './redux/RoutableCounter'
 store = createStoreWithMiddleware RoutableCounter.reducer
-
-
 
 # ROUTING STUFF =========================================
 
@@ -36,16 +30,12 @@ window.onpopstate = (e) ->
   store.dispatch RoutableCounter.actionCreators.backToPath path
 
 
+mapStateToProps = (reduxState) -> {reduxState}
+mapDispatchToProps = (dispatch) -> {dispatch}
 
-mapStateToProps = (state) -> {reduxState: RoutableCounter.unwrapState state}
-mapDispatchToProps = (realDispatch) ->
-  return {
-    dispatch: (action) -> realDispatch RoutableCounter.actionCreators.forwardAction action
-  }
-
-CounterUI = require './ui/Counter'
+UI = require './ui/RoutableCounter'
 { Provider, connect } = require('react-redux')
-ConnectedApp = connect(mapStateToProps, mapDispatchToProps)(CounterUI)
+ConnectedUI = connect(mapStateToProps, mapDispatchToProps)(UI)
 
 React = require 'react'
-React.render <Provider store={store}>{() -> <ConnectedApp />}</Provider>, document.getElementById('root')
+React.render <Provider store={store}>{() -> <ConnectedUI />}</Provider>, document.getElementById('root')
