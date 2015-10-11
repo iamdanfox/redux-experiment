@@ -1,6 +1,6 @@
 TwoRoutableCounters = require './TwoRoutableCounters'
 RoutableCounter = require './RoutableCounter'
-{ prefix, unprefix } = require('./Prefixer')('R2$')
+{ prefix, unprefix } = require('./Prefixer')('PW-')
 { unwrapState, makeActionCreators, makeReducer } = require('./RouterUtils')({prefix, unprefix})
 
 actionCreators = makeActionCreators

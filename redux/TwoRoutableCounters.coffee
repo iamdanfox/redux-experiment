@@ -6,14 +6,11 @@ ThunkForwarder = require './ThunkForwarder'
 sides = {'left', 'right'}
 
 prefixers =
-  left: Prefixer 'Left$'
-  right: Prefixer 'Right$'
+  left: Prefixer 'Left-'
+  right: Prefixer 'Right-'
 
 wrapAction = (side) -> (action) -> Object.assign {}, action, {type: prefixers[side].prefix action.type}
-unwrapAction = (side, action) ->
-  return null unless (type = prefixers[side].unprefix action.type)?
-  return Object.assign {}, action, {type}
-
+unwrapAction = (side, action) -> if (type = prefixers[side].unprefix action.type)? then Object.assign {}, action, {type} else null
 wrapState = (side, innerState) ->
   state = {}
   state[side] = innerState

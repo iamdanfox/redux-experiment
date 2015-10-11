@@ -1,5 +1,5 @@
 Counter = require './Counter'
-{ prefix, unprefix } = require('./Prefixer')('R1$')
+{ prefix, unprefix } = require('./Prefixer')('PW-')
 { unwrapState, makeActionCreators, makeReducer } = require('./RouterUtils')({prefix, unprefix})
 
 actionCreators = makeActionCreators
