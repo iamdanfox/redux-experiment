@@ -2,6 +2,8 @@ ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('fromBack$')
 
 enhance = (innerReducer) ->
+  throw "StoreEnhancer must be called with a reducer argument" unless typeof innerReducer is 'function'
+
   extendAction = (extension, action) ->
     prefixedExtension = {}
     for key,val of extension

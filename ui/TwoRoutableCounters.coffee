@@ -5,7 +5,10 @@ React = require 'react'
 Counter = require './Counter'
 ReduxNest = require './ReduxNest'
 RoutableCounter = require '../redux/RoutableCounter'
-RoutableCounterComponent = ReduxNest Counter, RoutableCounter.unwrapState, RoutableCounter.actionCreators.forwardAction
+RoutableCounterComponent = ReduxNest
+  inner: Counter
+  unwrapState: RoutableCounter.unwrapState
+  forwardAction: RoutableCounter.actionCreators.forwardAction
 
 
 TwoRoutableCounters = React.createClass

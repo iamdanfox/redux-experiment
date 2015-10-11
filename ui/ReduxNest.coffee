@@ -1,6 +1,10 @@
 React = require 'react'
 
-ReduxNest = (Inner, unwrapState, forwardAction) ->
+ReduxNest = ({inner, unwrapState, forwardAction}) ->
+
+  unless inner? and (typeof unwrapState is 'function') and (typeof forwardAction is 'function')
+    throw "ReduxNest requires inner, unwrapState and forwardAction parameters"
+
   return React.createClass
     displayName: 'ReduxNest'
 
@@ -13,6 +17,7 @@ ReduxNest = (Inner, unwrapState, forwardAction) ->
         reduxState: unwrapState @props.reduxState
         dispatch: (action) => @props.dispatch forwardAction action
 
+      Inner = inner
       <Inner {...props} />
 
 
