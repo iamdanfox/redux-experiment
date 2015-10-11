@@ -1,6 +1,3 @@
-
-
-
 actions = {'INCREMENT_COUNTER', 'DECREMENT_COUNTER', 'SET_TO_7', 'SET'}
 
 actionCreators =
@@ -26,4 +23,4 @@ reducer = (state = 0, action) ->
     when actions.SET then action.counter
     else state
 
-module.exports = {actions, actionCreators, reducer}
+module.exports = {actionCreators, reducer}

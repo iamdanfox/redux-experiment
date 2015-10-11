@@ -14,3 +14,4 @@ module.exports = prefixer
 console.assert prefixer('Rt$').prefix('a') is 'Rt$a', 'should add prefix correctly'
 console.assert prefixer('Rt$').unprefix('Rt$a') is 'a', 'should remove prefix correctly'
 console.assert prefixer('Rt$').unprefix('JKJADLJa') is null, 'shouldnt remove non prefix'
+console.assert prefixer('Rt$').unprefix(null) is null, 'shouldnt freak out with a null argument'

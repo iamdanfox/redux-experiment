@@ -32,17 +32,14 @@ actionCreators =
       forwardGetState: (realGetState) -> () -> unwrapState realGetState()
     )(actionCreatorResult)
 
-  handlePath: (path, fromBackButton = false) ->
+  backToPath: (path) ->
     {left, right} = TwoRoutableCounters.actionCreators
     {handlePath} = RoutableCounter.actionCreators
     return (dispatch, getState) ->
       [leftPath, rightPath] = path.split /\//
-      dispatch actionCreators.forwardAction left(handlePath leftPath), fromBackButton
-      dispatch actionCreators.forwardAction right(handlePath rightPath), fromBackButton
+      dispatch actionCreators.forwardAction left(handlePath leftPath), true
+      dispatch actionCreators.forwardAction right(handlePath rightPath), true
       return
-
-  backToPath: (path) ->
-    actionCreators.handlePath path, true
 
 
 lrRoutables = (innerState) ->
@@ -85,18 +82,12 @@ store = createStoreWithMiddleware reducer
 console.assert store.getState().url is '0/0', 'initial path'
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
 
-store.dispatch actionCreators.handlePath 'broken'
+store.dispatch actionCreators.backToPath 'broken'
 console.assert store.getState().url is '0/0', 'broken url redirected to initial'
 
-store.dispatch actionCreators.handlePath '1/0'
-console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
-console.assert unwrapState(store.getState()).right.inner is 0, 'right should have stayed at zero'
-console.assert store.getState().fromBackButton is false, 'should update history'
-
-store.dispatch actionCreators.handlePath '0/1'
+store.dispatch actionCreators.backToPath '0/1'
 console.assert unwrapState(store.getState()).left.inner is 0, 'left should have stayed zero'
 console.assert unwrapState(store.getState()).right.inner is 1, 'right should have updated to 1'
-console.assert store.getState().fromBackButton is false, 'should update history'
 
 store.dispatch actionCreators.backToPath '1/0'
 console.assert unwrapState(store.getState()).left.inner is 1, 'left should have updated'
