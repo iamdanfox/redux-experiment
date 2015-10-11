@@ -1,7 +1,7 @@
 RoutableCounter = require './RoutableCounter'
 Counter = require './Counter'
 Prefixer = require './Prefixer'
-
+ThunkForwarder = require './ThunkForwarder'
 
 sides = {'left', 'right'}
 
@@ -20,26 +20,16 @@ wrapState = (side, innerState) ->
   return state
 unwrapState = (side, state) -> state[side]
 
-
 actionCreators =
-  left: (actionCreatorResult) ->
-    if typeof actionCreatorResult is 'function' # ie, redux-thunk
-      return (realDispatch, realGetState) ->
-        dispatch = (a) -> realDispatch wrapAction sides.left, a
-        getState = () -> unwrapState sides.left, realGetState()
-        actionCreatorResult dispatch, getState
-    else
-      return wrapAction sides.left, actionCreatorResult
+  left: ThunkForwarder
+    forwardPlain: (action) -> wrapAction sides.left, action
+    forwardDispatch: (realDispatch) -> (a) -> realDispatch wrapAction sides.left, a
+    forwardGetState: (realGetState) -> () -> unwrapState sides.left, realGetState()
 
-  right: (actionCreatorResult) ->
-    if typeof actionCreatorResult is 'function' # ie, redux-thunk
-      return (realDispatch, realGetState) ->
-        dispatch = (a) -> realDispatch wrapAction sides.right, a
-        getState = () -> unwrapState sides.right, realGetState()
-        actionCreatorResult dispatch, getState
-    else
-      return wrapAction sides.right, actionCreatorResult
-
+  right: ThunkForwarder
+    forwardPlain: (action) -> wrapAction sides.right, action
+    forwardDispatch: (realDispatch) -> (a) -> realDispatch wrapAction sides.right, a
+    forwardGetState: (realGetState) -> () -> unwrapState sides.right, realGetState()
 
 initialState =
   left: RoutableCounter.reducer undefined, {}
@@ -49,9 +39,11 @@ reducer = (state = initialState, action) ->
   if (unwrappedAction = unwrapAction sides.left, action)?
     unwrappedState = unwrapState sides.left, state
     return Object.assign {}, state, {left: RoutableCounter.reducer unwrappedState, unwrappedAction}
+
   if (unwrappedAction = unwrapAction sides.right, action)?
     unwrappedState = unwrapState sides.right, state
     return Object.assign {}, state, {right: RoutableCounter.reducer unwrappedState, unwrappedAction}
+
   return state
 
 module.exports = {sides, actionCreators, reducer, unwrapState}
