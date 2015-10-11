@@ -21,8 +21,8 @@ unwrapAction = (action) ->
   return null unless (type = unprefix action.type)?
   return Object.assign {}, action, {type}
 
-wrapState = (state) -> {inner: state}
-unwrapState = (state) -> state.inner
+wrapState = (inner) -> {inner}
+unwrapState = ({inner}) -> inner
 
 
 
@@ -60,8 +60,6 @@ reducer = (state = initialState, action) ->
 module.exports = {actionCreators, reducer, unwrapState}
 
 # cheeky little unit tests
-
-console.log 'RoutableCounter'
 
 { createStore } = require 'redux'
 store = createStore reducer
