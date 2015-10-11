@@ -38,8 +38,8 @@ reactUtils =
   stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
   dispatchToProps: (dispatch) -> {dispatch: compose dispatch, actionCreators.historyEntry}
 
-makeBackButtonTracker = (innerReducer) ->
-  throw "BackButtonTracker must be called with a reducer argument" unless typeof innerReducer is 'function'
+makeBackButtonAware = (innerReducer) ->
+  throw "BackButtonAware must be called with a reducer argument" unless typeof innerReducer is 'function'
 
   initialState = do ->
     innerInitialState = innerReducer undefined, {}
@@ -54,7 +54,7 @@ makeBackButtonTracker = (innerReducer) ->
   return {actionCreators, reducer, unwrapState}
 
 
-module.exports = { makeBackButtonTracker, reactUtils }
+module.exports = { makeBackButtonAware, reactUtils }
 
 
 
@@ -65,7 +65,7 @@ thunk = require 'redux-thunk'
 # logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 someReducer = require('../redux/Counter').reducer
-triple = makeBackButtonTracker someReducer
+triple = makeBackButtonAware someReducer
 store = createStoreWithMiddleware triple.reducer
 
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
