@@ -1,6 +1,6 @@
 Counter = require './Counter'
 { prefix, unprefix } = require('./Prefixer')('R1$')
-{ wrapAction, wrapState, unwrapState, makeActionCreators, makeReducer } = require('./RouterUtils')({prefix, unprefix})
+{ unwrapState, makeActionCreators, makeReducer } = require('./RouterUtils')({prefix, unprefix})
 
 actionCreators = makeActionCreators
   handlePath: (path) ->

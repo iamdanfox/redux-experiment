@@ -6,13 +6,13 @@ routerUtils = ({prefix, unprefix}) ->
   wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
   wrapState = (inner) -> {inner}
   unwrapState = ({inner}) -> inner
+  unwrapAction = (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 
   makeActionCreators = ({handlePath}) ->
     wrap: ThunkForwarder({wrapAction, unwrapState})
     handlePath: handlePath
 
   makeReducer = (innerReducer, pathFromState) ->
-    unwrapAction = (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 
     initialState = do ->
       innerInitialState = innerReducer undefined, {}
@@ -24,6 +24,6 @@ routerUtils = ({prefix, unprefix}) ->
       pathChanged = newUrl isnt state.url
       return Object.assign wrapState(innerState), {url: newUrl, pathChanged}
 
-  return {wrapAction, wrapState, unwrapState, makeActionCreators, makeReducer}
+  return {unwrapState, makeActionCreators, makeReducer}
 
 module.exports = routerUtils
