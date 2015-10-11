@@ -28,7 +28,7 @@ enhance = (innerReducer) ->
   forward = (fromBackButton) -> (actionCreatorResult) ->
     ThunkForwarder(
       forwardPlain: (action) -> extendAction {fromBackButton}, wrapAction action
-      forwardGetState: (realGetState) -> () -> unwrapState realGetState()
+      forwardGetState: unwrapState
     )(actionCreatorResult)
 
   actionCreators =
