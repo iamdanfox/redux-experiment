@@ -1,3 +1,6 @@
+{ compose } = require 'redux'
+
+
 thunkForwarder = ({forwardPlain, forwardDispatch, forwardGetState}) ->
   (actionCreatorResult) ->
     if typeof actionCreatorResult is 'function' # ie, redux-thunk
@@ -5,5 +8,11 @@ thunkForwarder = ({forwardPlain, forwardDispatch, forwardGetState}) ->
     else
       return forwardPlain actionCreatorResult
 
+# slimmedDownThunkForwarder = ({wrapAction, unwrapState}) ->
+#   (a) ->
+#     if typeof actionCreatorResult is 'function' # ie, redux-thunk
+#       return (dispatch, getState) -> actionCreatorResult dispatch(wrapAction a), unwrapState(getState())
+#     else
+#       return wrapAction a
 
 module.exports = thunkForwarder
