@@ -1,12 +1,23 @@
 { createStore, applyMiddleware, combineReducers, bindActionCreators } = require('redux')
 logger = require 'redux-logger'
 thunk = require('redux-thunk')
-createStoreWithMiddleware = applyMiddleware(thunk, logger({collapsed: true}))(createStore)
-# createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 
 { reducer } = require './redux/RoutableCounter'
 { handlePath, backToPath } = require('./redux/RoutableCounter').actionCreators
+UI = require './ui/RoutableCounter'
+
+# INITIALIZATION =========================================
+
+createStoreWithMiddleware = applyMiddleware(thunk, logger({collapsed: true}))(createStore)
 store = createStoreWithMiddleware reducer
+mapStateToProps = (reduxState) -> {reduxState}
+mapDispatchToProps = (dispatch) -> {dispatch}
+
+{ Provider, connect } = require('react-redux')
+ConnectedUI = connect(mapStateToProps, mapDispatchToProps)(UI)
+
+React = require 'react'
+React.render <Provider store={store}>{() -> <ConnectedUI />}</Provider>, document.getElementById('root')
 
 # ROUTING STUFF =========================================
 
@@ -31,14 +42,3 @@ window.onpopstate = (e) ->
   # back button shouldn't insert a new history entry.
   path = dropFirstSlash window.location.pathname
   store.dispatch backToPath path
-
-
-mapStateToProps = (reduxState) -> {reduxState}
-mapDispatchToProps = (dispatch) -> {dispatch}
-
-UI = require './ui/RoutableCounter'
-{ Provider, connect } = require('react-redux')
-ConnectedUI = connect(mapStateToProps, mapDispatchToProps)(UI)
-
-React = require 'react'
-React.render <Provider store={store}>{() -> <ConnectedUI />}</Provider>, document.getElementById('root')
