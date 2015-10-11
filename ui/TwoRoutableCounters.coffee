@@ -20,11 +20,11 @@ TwoRoutableCounters = React.createClass
 
   render: () ->
     leftProps =
-      reduxState: unwrapState sides.left, @props.reduxState
+      reduxState: unwrapState(sides.left) @props.reduxState
       dispatch: (action) => @props.dispatch left action
 
     rightProps =
-      reduxState: unwrapState sides.right, @props.reduxState
+      reduxState: unwrapState(sides.right) @props.reduxState
       dispatch: (action) => @props.dispatch right action
 
     <div>

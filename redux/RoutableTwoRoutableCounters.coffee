@@ -15,9 +15,10 @@ actionCreators = makeActionCreators
       return
 
 pathFromState = (innerState) ->
-  l = TwoRoutableCounters.unwrapState TwoRoutableCounters.sides.left, innerState
-  r = TwoRoutableCounters.unwrapState TwoRoutableCounters.sides.right, innerState
-  return "#{l.path}/#{r.path}"
+  { sides } = TwoRoutableCounters
+  l = TwoRoutableCounters.unwrapState(sides.left)(innerState).path
+  r = TwoRoutableCounters.unwrapState(sides.right)(innerState).path
+  return "#{l}/#{r}"
 
 reducer = makeReducer(TwoRoutableCounters.reducer, pathFromState)
 

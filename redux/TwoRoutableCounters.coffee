@@ -9,7 +9,7 @@ prefixers =
   left: Prefixer 'Left$'
   right: Prefixer 'Right$'
 
-wrapAction = (side, action) -> Object.assign {}, action, {type: prefixers[side].prefix action.type}
+wrapAction = (side) -> (action) -> Object.assign {}, action, {type: prefixers[side].prefix action.type}
 unwrapAction = (side, action) ->
   return null unless (type = prefixers[side].unprefix action.type)?
   return Object.assign {}, action, {type}
@@ -18,16 +18,16 @@ wrapState = (side, innerState) ->
   state = {}
   state[side] = innerState
   return state
-unwrapState = (side, state) -> state[side]
+unwrapState = (side) -> (state) -> state[side]
 
 actionCreators =
   left: ThunkForwarder
-    wrapAction: (action) -> wrapAction sides.left, action
-    unwrapState: (realGetState) -> unwrapState sides.left, realGetState
+    wrapAction: wrapAction sides.left
+    unwrapState: unwrapState sides.left
 
   right: ThunkForwarder
-    wrapAction: (action) -> wrapAction sides.right, action
-    unwrapState: (realGetState) -> unwrapState sides.right, realGetState
+    wrapAction: wrapAction sides.right
+    unwrapState: unwrapState sides.right
 
 initialState =
   left: RoutableCounter.reducer undefined, {}
@@ -35,11 +35,11 @@ initialState =
 
 reducer = (state = initialState, action) ->
   if (unwrappedAction = unwrapAction sides.left, action)?
-    unwrappedState = unwrapState sides.left, state
+    unwrappedState = unwrapState(sides.left) state
     return Object.assign {}, state, {left: RoutableCounter.reducer unwrappedState, unwrappedAction}
 
   if (unwrappedAction = unwrapAction sides.right, action)?
-    unwrappedState = unwrapState sides.right, state
+    unwrappedState = unwrapState(sides.right) state
     return Object.assign {}, state, {right: RoutableCounter.reducer unwrappedState, unwrappedAction}
 
   return state
