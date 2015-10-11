@@ -1,17 +1,7 @@
 Counter = require './Counter'
 
 
-prefixes = { 'Rt$' }
-
-prefix = (string) -> prefixes.Rt$ + string
-unprefix = (prefixedString) ->
-  if prefixedString.indexOf(prefixes.Rt$) is -1
-    return null
-  return prefixedString.substr prefixes.Rt$.length
-
-console.assert prefix('a') is 'Rt$a', 'should add prefix correctly'
-console.assert unprefix('Rt$a') is 'a', 'should remove prefix correctly'
-console.assert unprefix('JKJADLJa') is null, 'shouldnt remove non prefix'
+{prefix, unprefix} = require('./Prefixer')('Rt$')
 
 
 extendAction = (key, value, action) ->
