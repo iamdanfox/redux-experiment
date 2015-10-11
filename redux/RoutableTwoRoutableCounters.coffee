@@ -27,12 +27,12 @@ module.exports = {actionCreators, reducer, unwrapState: pathAugmenter.unwrapStat
 
 
 # cheeky little unit tests
-{ makeHistoryAware } = require '../router/HistoryAugmenter'
+{ augment } = require '../router/HistoryAugmenter'
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
 # logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
-triple = makeHistoryAware reducer
+triple = augment reducer
 store = createStoreWithMiddleware triple.reducer
 
 console.assert triple.unwrapState(store.getState()).path is '0/0', 'initial path'
