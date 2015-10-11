@@ -3,14 +3,16 @@ ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('Rt$')
 
 
-extendAction = (key, value, action) ->
-  extension = {}
-  extension[prefix key] = value
-  return Object.assign {}, action, extension
-unextendAction = (key, originalAction) ->
+extendAction = (extension, action) ->
+  prefixedExtension = {}
+  for key,val of extension
+    prefixedExtension[prefix key] = val
+  return Object.assign {}, action, prefixedExtension
+unextendAction = (extensionKeyObject, originalAction) ->
   action = Object.assign {}, originalAction
   extension = {}
-  extension[key] = action[prefix key]
+  for key,val of extensionKeyObject
+    extension[key] = action[prefix key]
   delete action[prefix key]
   return {action, extension}
 
@@ -25,58 +27,67 @@ unwrapState = (state) -> state.inner
 
 
 actionCreators =
-  forwardAction: (actionCreatorResult, createHistoryEntry = true) ->
+  forwardAction: (actionCreatorResult, fromBackButton = false) ->
     ThunkForwarder(
-      forwardPlain: (action) -> extendAction 'createHistoryEntry', createHistoryEntry, wrapAction action
-      forwardDispatch: (realDispatch) -> (a) -> realDispatch extendAction 'createHistoryEntry', createHistoryEntry, wrapAction a
+      forwardPlain: (action) -> extendAction {fromBackButton}, wrapAction action
+      forwardDispatch: (realDispatch) -> (a) -> realDispatch extendAction {fromBackButton}, wrapAction a
       forwardGetState: (realGetState) -> () -> unwrapState realGetState()
     )(actionCreatorResult)
 
-  handlePath: (path, createHistoryEntry = true) ->
+  handlePath: (path, fromBackButton = false) ->
     if path is '' # initial load
       initial = Counter.reducer undefined, {}
-      return actionCreators.forwardAction Counter.actionCreators.set(initial), createHistoryEntry
+      return actionCreators.forwardAction Counter.actionCreators.set(initial), fromBackButton
 
     number = parseInt path, 10
-    return actionCreators.forwardAction Counter.actionCreators.set(number), createHistoryEntry
+    return actionCreators.forwardAction Counter.actionCreators.set(number), fromBackButton
 
   backToPath: (path) ->
-    actionCreators.handlePath path, false
+    actionCreators.handlePath path, true
 
 
-initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, createHistoryEntry: true}
+initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, fromBackButton: false, pathChanged: false}
 
 reducer = (state = initialState, action) ->
-  actionAndExtension = unextendAction 'createHistoryEntry', unwrapAction(action) or {}
+  actionAndExtension = unextendAction {'fromBackButton'}, unwrapAction(action) or {}
   innerState = Counter.reducer unwrapState(state), actionAndExtension.action
   newUrl = innerState.toString()
-  createHistoryEntry = newUrl isnt state.url
-  if actionAndExtension.extension.createHistoryEntry is false # actions can prevent history entries
-    createHistoryEntry = false
-  return Object.assign wrapState(innerState), {url: newUrl, createHistoryEntry}
+  pathChanged = newUrl isnt state.url
+  fromBackButton = if actionAndExtension.extension.fromBackButton? then actionAndExtension.extension.fromBackButton else state.fromBackButton
+  return Object.assign wrapState(innerState), {url: newUrl, fromBackButton, pathChanged}
 
 
 module.exports = {actionCreators, reducer, unwrapState}
 
 # cheeky little unit tests
 
+console.log 'RoutableCounter'
+
 { createStore } = require 'redux'
 store = createStore reducer
 console.assert unwrapState(store.getState()) is 0, 'initial state'
 console.assert store.getState().url is '0', 'initial url '
+console.assert store.getState().fromBackButton is false, 'initially not from back button'
+console.assert store.getState().pathChanged is true, 'path did change initially'
 
 store.dispatch actionCreators.handlePath '1'
 
 console.assert unwrapState(store.getState()) is 1, 'state has changed after handlePath'
 console.assert store.getState().url is '1', 'url has changed'
-console.assert store.getState().createHistoryEntry is true, 'should create history entries by default'
+console.assert store.getState().fromBackButton is false, 'again not from back button'
+console.assert store.getState().pathChanged is true, 'path changed from 0 to 1'
 
 store.dispatch actionCreators.backToPath '0'
 
 console.assert unwrapState(store.getState()) is 0, 'state has changed after backToPath'
 console.assert store.getState().url is '0', 'url has changed'
-console.assert store.getState().createHistoryEntry is false, 'should not create history entry for a back action'
+console.assert store.getState().fromBackButton, 'this time we did come from a back button'
+
+store.dispatch actionCreators.backToPath '0'
+console.assert store.getState().fromBackButton, 'more back button'
+console.assert store.getState().pathChanged is false, 'path hasnt changed'
 
 store.dispatch {type:'UNKNOWN'}
 
-console.assert store.getState().createHistoryEntry is false, 'unchanged url shouldnt create history'
+console.assert store.getState().fromBackButton, 'this reducer still thinks the most recent action was triggered by a back button'
+console.assert store.getState().pathChanged is false, 'unchanged url shouldnt create history'
