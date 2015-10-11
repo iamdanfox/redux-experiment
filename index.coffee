@@ -27,8 +27,10 @@ React.render (
 ), document.getElementById 'root'
 
 # start router
-Router = require './redux/Router'
-Router store, compose(actionCreators.noHistoryEntry, Routable.actionCreators.handlePath),
-  url: (state) -> unwrapState(state).url
+{ startRouter } = require './redux/Router'
+startRouter
+  store: store
+  handlePopStatePath: compose(actionCreators.noHistoryEntry, Routable.actionCreators.handlePath)
+  pathFromReduxState: (state) -> unwrapState(state).url
   pathChanged: (state) -> unwrapState(state).pathChanged
   fromBackButton: (state) -> state.fromBackButton
