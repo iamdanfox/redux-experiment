@@ -1,11 +1,12 @@
 { compose } = require 'redux'
-ThunkForwarder = require './ThunkForwarder'
-HistoryEntryPrefixer = require('./Prefixer')('history$')
-NoHistoryPrefixer = require('./Prefixer')('nohistory$')
+ThunkForwarder = require '../redux/ThunkForwarder'
+HistoryEntryPrefixer = require('../redux/Prefixer')('history$')
+NoHistoryPrefixer = require('../redux/Prefixer')('nohistory$')
 
-wrapState = (inner) -> {inner}
-unwrapState = ({inner}) -> inner
+wrapState = (innerBBA) -> {innerBBA}
+unwrapState = ({innerBBA}) -> innerBBA
 wrapAction = (prefix) -> (action) -> Object.assign {}, action, {type: prefix action.type}
+unwrapAction = (unprefix, action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 
 actionCreators =
   historyEntry: ThunkForwarder {unwrapState, wrapAction: wrapAction(HistoryEntryPrefixer.prefix)}
@@ -15,36 +16,28 @@ reactUtils =
   stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
   dispatchToProps: (dispatch) -> {dispatch: compose dispatch, actionCreators.historyEntry}
 
-makeBackButtonAware = (innerReducer) ->
-  throw "BackButtonAware must be called with a reducer argument" unless typeof innerReducer is 'function'
+makeHistoryAware = (innerReducer) ->
+  throw "HistoryAware must be called with a reducer argument" unless typeof innerReducer is 'function'
 
   initialState = do ->
     innerInitialState = innerReducer undefined, {}
     return Object.assign {}, wrapState(innerInitialState), {fromBackButton: false}
 
+  reduceInnerState = (state, unwrappedAction) ->
+    return wrapState innerReducer unwrapState(state), unwrappedAction
+
   reducer = (state = initialState, action) ->
-    unwrapForwardAction = (action) ->
-      return null unless (type = HistoryEntryPrefixer.unprefix action.type)?
-      return Object.assign {}, action, {type}
-
-    unwrapBackAction = (action) ->
-      return null unless (type = NoHistoryPrefixer.unprefix action.type)?
-      return Object.assign {}, action, {type}
-
-    if (a = unwrapForwardAction action)
-      innerState = innerReducer unwrapState(state), a
-      return Object.assign wrapState(innerState), {fromBackButton: false}
-
-    if (a = unwrapBackAction action)
-      innerState = innerReducer unwrapState(state), a
-      return Object.assign wrapState(innerState), {fromBackButton: true}
-
-    return state
+    if a = unwrapAction HistoryEntryPrefixer.unprefix, action
+      return Object.assign {}, reduceInnerState(state, a), {fromBackButton: false}
+    else if a = unwrapAction NoHistoryPrefixer.unprefix, action
+      return Object.assign {}, reduceInnerState(state, a), {fromBackButton: true}
+    else
+      return state
 
   return {actionCreators, reducer, unwrapState}
 
 
-module.exports = { makeBackButtonAware, reactUtils }
+module.exports = { makeHistoryAware, reactUtils }
 
 
 
@@ -55,7 +48,7 @@ thunk = require 'redux-thunk'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 # createStoreWithMiddleware = applyMiddleware(thunk, require('redux-logger')())(createStore)
 someReducer = require('../redux/Counter').reducer
-triple = makeBackButtonAware someReducer
+triple = makeHistoryAware someReducer
 store = createStoreWithMiddleware triple.reducer
 
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'

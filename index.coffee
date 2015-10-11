@@ -1,7 +1,7 @@
 # augment reducer
-{ makeBackButtonAware, reactUtils } = require './redux/BackButtonAware'
+{ makeHistoryAware, reactUtils } = require './router/MakeHistoryAware'
 Routable = require './redux/RoutableTwoRoutableCounters'
-{ reducer, actionCreators, unwrapState } = makeBackButtonAware Routable.reducer
+{ reducer, actionCreators, unwrapState } = makeHistoryAware Routable.reducer
 
 # set up middleware pipeline
 { createStore, applyMiddleware, compose } = require 'redux'
@@ -11,18 +11,18 @@ store = applyMiddleware(thunk, logger {collapsed: true})(createStore) reducer
 
 # hide some routing related stuff from react
 ReduxNest = require './ui/ReduxNest'
-RoutableBackButtonAwareComponent = ReduxNest
+RoutableHistoryAwareComponent = ReduxNest
   inner: require './ui/TwoRoutableCounters'
   unwrapState: Routable.unwrapState
   wrap: Routable.actionCreators.wrap
 
 # wire up to react
 { Provider, connect } = require 'react-redux'
-ConnectedRoutableBackButtonAwareComponent = connect(reactUtils.stateToProps, reactUtils.dispatchToProps) RoutableBackButtonAwareComponent
+ConnectedRoutableHistoryAwareComponent = connect(reactUtils.stateToProps, reactUtils.dispatchToProps) RoutableHistoryAwareComponent
 React = require 'react'
 React.render (
   <Provider store={store}>
-    {() -> <ConnectedRoutableBackButtonAwareComponent />}
+    {() -> <ConnectedRoutableHistoryAwareComponent />}
   </Provider>
 ), document.getElementById 'root'
 
