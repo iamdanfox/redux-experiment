@@ -3,9 +3,9 @@ React = require 'react'
 { left, right } = require('../redux/TwoRoutableCounters').actionCreators
 
 Counter = require './Counter'
-ReduxNest = require './ReduxNest'
+reduxNestComponent = require '../nest/ReduxNestComponent'
 RoutableCounter = require '../redux/RoutableCounter'
-RoutableCounterComponent = ReduxNest
+RoutableCounterComponent = reduxNestComponent
   inner: Counter
   unwrapState: RoutableCounter.unwrapState
   wrap: RoutableCounter.actionCreators.wrap

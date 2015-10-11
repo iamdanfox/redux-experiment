@@ -1,12 +1,12 @@
 React = require 'react'
 
-ReduxNest = ({inner, unwrapState, wrap}) ->
+ReduxNestComponent = ({inner, unwrapState, wrap}) ->
 
   unless inner? and (typeof unwrapState is 'function') and (typeof wrap is 'function')
-    throw "ReduxNest requires inner, unwrapState and wrap parameters"
+    throw "ReduxNestComponent requires inner, unwrapState and wrap parameters"
 
   return React.createClass
-    displayName: 'ReduxNest'
+    displayName: 'ReduxNestComponent'
 
     propTypes:
       reduxState: React.PropTypes.object.isRequired
@@ -21,4 +21,4 @@ ReduxNest = ({inner, unwrapState, wrap}) ->
       <Inner {...props} />
 
 
-module.exports = ReduxNest
+module.exports = ReduxNestComponent

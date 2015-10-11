@@ -10,8 +10,8 @@ logger = require 'redux-logger'
 store = applyMiddleware(thunk, logger {collapsed: true})(createStore) reducer
 
 # hide some routing related stuff from react
-ReduxNest = require './ui/ReduxNest'
-RoutableHistoryAwareComponent = ReduxNest
+reduxNestComponent = require './nest/ReduxNestComponent'
+RoutableHistoryAwareComponent = reduxNestComponent
   inner: require './ui/TwoRoutableCounters'
   unwrapState: Routable.unwrapState
   wrap: Routable.actionCreators.wrap
