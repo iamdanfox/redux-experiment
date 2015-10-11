@@ -8,7 +8,7 @@ RoutableCounter = require '../redux/RoutableCounter'
 RoutableCounterComponent = ReduxNest
   inner: Counter
   unwrapState: RoutableCounter.unwrapState
-  forwardAction: RoutableCounter.actionCreators.forwardAction
+  wrap: RoutableCounter.actionCreators.wrap
 
 
 TwoRoutableCounters = React.createClass

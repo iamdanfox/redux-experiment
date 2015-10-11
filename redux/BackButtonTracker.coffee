@@ -3,7 +3,7 @@ ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('fromBack$')
 
 enhance = (innerReducer) ->
-  throw "StoreEnhancer must be called with a reducer argument" unless typeof innerReducer is 'function'
+  throw "BackButtonTracker must be called with a reducer argument" unless typeof innerReducer is 'function'
 
   extendAction = (extension) -> (action) ->
     prefixedExtension = {}
@@ -26,15 +26,15 @@ enhance = (innerReducer) ->
   wrapState = (inner) -> {inner}
   unwrapState = ({inner}) -> inner
 
-  forward = (fromBackButton) -> (actionCreatorResult) ->
+  wrapAndExtendWith = (fromBackButton) -> (actionCreatorResult) ->
     ThunkForwarder(
       wrapAction: compose extendAction({fromBackButton}), wrapAction
       unwrapState: unwrapState
     )(actionCreatorResult)
 
   actionCreators =
-    historyEntry: forward false
-    noHistoryEntry: forward true
+    historyEntry: wrapAndExtendWith false
+    noHistoryEntry: wrapAndExtendWith true
 
   initialState = do ->
     innerInitialState = innerReducer undefined, {}

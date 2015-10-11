@@ -8,20 +8,16 @@ wrapState = (inner) -> {inner}
 unwrapState = ({inner}) -> inner
 
 actionCreators =
-  forwardAction: (actionCreatorResult) ->
-    ThunkForwarder(
-      wrapAction: wrapAction
-      unwrapState: unwrapState
-    )(actionCreatorResult)
+  wrap: ThunkForwarder({wrapAction, unwrapState})
 
   handlePath: (path) ->
     if path is '' # initial load
       initial = Counter.reducer undefined, {}
-      return actionCreators.forwardAction Counter.actionCreators.set(initial)
+      return actionCreators.wrap Counter.actionCreators.set(initial)
 
     number = parseInt path, 10
     if isNaN(number) then number = Counter.reducer undefined, {}
-    return actionCreators.forwardAction Counter.actionCreators.set(number)
+    return actionCreators.wrap Counter.actionCreators.set(number)
 
 
 initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, fromBackButton: false, pathChanged: false}

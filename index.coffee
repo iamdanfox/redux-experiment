@@ -1,10 +1,10 @@
 { createStore, applyMiddleware, compose } = require 'redux'
 thunk = require 'redux-thunk'
 logger = require 'redux-logger'
-StoreEnhancer = require './redux/StoreEnhancer'
+makeBackButtonTracker = require './redux/BackButtonTracker'
 Routable = require './redux/RoutableTwoRoutableCounters'
-{ reducer, actionCreators, unwrapState } = StoreEnhancer Routable.reducer
-UI = require './ui/TwoRoutableCounters'
+{ reducer, actionCreators, unwrapState } = makeBackButtonTracker Routable.reducer
+UIComponent = require './ui/TwoRoutableCounters'
 ReduxNest = require './ui/ReduxNest'
 React = require 'react'
 { Provider, connect } = require 'react-redux'
@@ -15,9 +15,9 @@ store = applyMiddleware(thunk, logger {collapsed: true})(createStore) reducer
 stateToProps = (reduxState) -> {reduxState: unwrapState reduxState}
 dispatchToProps = (dispatch) -> {dispatch: compose dispatch, actionCreators.historyEntry}
 RoutableComponent = ReduxNest
-  inner: UI
+  inner: UIComponent
   unwrapState: Routable.unwrapState
-  forwardAction: Routable.actionCreators.forwardAction
+  wrap: Routable.actionCreators.wrap
 
 ConnectedUI = connect(stateToProps, dispatchToProps) RoutableComponent
 
@@ -33,4 +33,4 @@ Router store, compose(actionCreators.noHistoryEntry, Routable.actionCreators.han
   fromBackButton: (state) -> state.fromBackButton
 
 
-# require './redux/StoreEnhancer'
+# require './redux/BackButtonTracker'
