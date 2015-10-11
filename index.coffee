@@ -4,6 +4,7 @@ thunk = require('redux-thunk')
 createStoreWithMiddleware = applyMiddleware(thunk, logger({collapsed: true}))(createStore)
 # createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 
+require './redux/RoutableTwoRoutableCounters'
 { reducer } = require './redux/TwoRoutableCounters'
 store = createStoreWithMiddleware reducer
 
