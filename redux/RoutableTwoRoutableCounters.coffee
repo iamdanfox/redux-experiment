@@ -25,12 +25,12 @@ module.exports = {actionCreators, reducer, unwrapState}
 
 
 # cheeky little unit tests
-BackButtonTracker = require './BackButtonTracker'
+{ makeBackButtonTracker } = require './BackButtonTracker'
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
 # logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
-triple = BackButtonTracker reducer
+triple = makeBackButtonTracker reducer
 store = createStoreWithMiddleware triple.reducer
 
 console.assert triple.unwrapState(store.getState()).url is '0/0', 'initial path'

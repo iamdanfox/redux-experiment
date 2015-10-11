@@ -2,39 +2,44 @@
 ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('fromBack$')
 
-enhance = (innerReducer) ->
+
+extendAction = (extension) -> (action) ->
+  prefixedExtension = {}
+  for key,val of extension
+    prefixedExtension[prefix key] = val
+  return Object.assign {}, action, prefixedExtension
+unextendAction = (extensionKeyObject, originalAction) ->
+  action = Object.assign {}, originalAction
+  extension = {}
+  for key,val of extensionKeyObject
+    extension[key] = action[prefix key]
+  delete action[prefix key]
+  return {action, extension}
+
+wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
+unwrapAction = (action) ->
+  return null unless (type = unprefix action.type)?
+  return Object.assign {}, action, {type}
+
+wrapState = (inner) -> {inner}
+unwrapState = ({inner}) -> inner
+
+wrapAndExtendWith = (fromBackButton) -> (actionCreatorResult) ->
+  ThunkForwarder(
+    wrapAction: compose extendAction({fromBackButton}), wrapAction
+    unwrapState: unwrapState
+  )(actionCreatorResult)
+
+actionCreators =
+  historyEntry: wrapAndExtendWith false
+  noHistoryEntry: wrapAndExtendWith true
+
+reactUtils =
+  stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
+  dispatchToProps: (dispatch) -> {dispatch: compose dispatch, actionCreators.historyEntry}
+
+makeBackButtonTracker = (innerReducer) ->
   throw "BackButtonTracker must be called with a reducer argument" unless typeof innerReducer is 'function'
-
-  extendAction = (extension) -> (action) ->
-    prefixedExtension = {}
-    for key,val of extension
-      prefixedExtension[prefix key] = val
-    return Object.assign {}, action, prefixedExtension
-  unextendAction = (extensionKeyObject, originalAction) ->
-    action = Object.assign {}, originalAction
-    extension = {}
-    for key,val of extensionKeyObject
-      extension[key] = action[prefix key]
-    delete action[prefix key]
-    return {action, extension}
-
-  wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
-  unwrapAction = (action) ->
-    return null unless (type = unprefix action.type)?
-    return Object.assign {}, action, {type}
-
-  wrapState = (inner) -> {inner}
-  unwrapState = ({inner}) -> inner
-
-  wrapAndExtendWith = (fromBackButton) -> (actionCreatorResult) ->
-    ThunkForwarder(
-      wrapAction: compose extendAction({fromBackButton}), wrapAction
-      unwrapState: unwrapState
-    )(actionCreatorResult)
-
-  actionCreators =
-    historyEntry: wrapAndExtendWith false
-    noHistoryEntry: wrapAndExtendWith true
 
   initialState = do ->
     innerInitialState = innerReducer undefined, {}
@@ -49,7 +54,7 @@ enhance = (innerReducer) ->
   return {actionCreators, reducer, unwrapState}
 
 
-module.exports = enhance
+module.exports = { makeBackButtonTracker, reactUtils }
 
 
 
@@ -60,7 +65,7 @@ thunk = require 'redux-thunk'
 # logger = require 'redux-logger'
 createStoreWithMiddleware = applyMiddleware(thunk)(createStore)
 someReducer = require('../redux/Counter').reducer
-triple = enhance someReducer
+triple = makeBackButtonTracker someReducer
 store = createStoreWithMiddleware triple.reducer
 
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
