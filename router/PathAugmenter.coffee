@@ -8,12 +8,12 @@ wrapAction = (prefix) -> (action) -> Object.assign {}, action, {type: prefix act
 unwrapAction = (unprefix) -> (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 
 
-pathAugmenterFromPrefixer = ({prefix, unprefix}) ->
+makePathAugmenter = ({prefix, unprefix, nestActionCreator}) ->
   return {
     unwrapState: unwrapState
 
     makeActionCreators: ({handlePath}) ->
-      wrap: NestThunkCreator {unwrapState, wrapAction: wrapAction prefix}
+      wrap: nestActionCreator {unwrapState, wrapAction: wrapAction prefix}
       handlePath: handlePath
 
     extendReducer: (innerReducer, keyToMapperObject) ->
@@ -31,6 +31,9 @@ pathAugmenterFromPrefixer = ({prefix, unprefix}) ->
         return Object.assign wrapState(innerState), extensionFromState innerState
   }
 
-pathAugmenter = pathAugmenterFromPrefixer DefaultPrefixer
+pathAugmenter = makePathAugmenter
+  prefix: DefaultPrefixer.prefix
+  unprefix: DefaultPrefixer.unprefix
+  nestActionCreator: NestThunkCreator
 
-module.exports = { pathAugmenterFromPrefixer, pathAugmenter }
+module.exports = { makePathAugmenter, pathAugmenter }
