@@ -1,7 +1,7 @@
 TwoRoutableCounters = require './TwoRoutableCounters'
 RoutableCounter = require './RoutableCounter'
 ThunkForwarder = require './ThunkForwarder'
-{ prefix, unprefix } = require('./Prefixer')('Rt$')
+{ prefix, unprefix } = require('./Prefixer')('R2$')
 
 wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
 unwrapAction = (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
@@ -43,10 +43,8 @@ reducer = (state = initialState, action) ->
 module.exports = {actionCreators, reducer, unwrapState}
 
 
-StoreEnhancer = require './StoreEnhancer'
-
-
 # cheeky little unit tests
+StoreEnhancer = require './StoreEnhancer'
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
 # logger = require 'redux-logger'
