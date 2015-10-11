@@ -1,7 +1,6 @@
 Counter = require './Counter'
-
-
-{prefix, unprefix} = require('./Prefixer')('Rt$')
+ThunkForwarder = require './ThunkForwarder'
+{ prefix, unprefix } = require('./Prefixer')('Rt$')
 
 
 extendAction = (key, value, action) ->
@@ -26,14 +25,12 @@ unwrapState = (state) -> state.inner
 
 
 actionCreators =
-  forwardAction: (action, createHistoryEntry = true) ->
-    if typeof action is 'function' # ie, redux-thunk
-      return (realDispatch, realGetState) ->
-        dispatch = (a) -> realDispatch extendAction 'createHistoryEntry', createHistoryEntry, wrapAction a
-        getState = () -> unwrapState realGetState()
-        action dispatch, getState
-    else
-      return extendAction 'createHistoryEntry', createHistoryEntry, wrapAction action
+  forwardAction: (actionCreatorResult, createHistoryEntry = true) ->
+    ThunkForwarder(
+      forwardPlain: (action) -> extendAction 'createHistoryEntry', createHistoryEntry, wrapAction action
+      forwardDispatch: (realDispatch) -> (a) -> realDispatch extendAction 'createHistoryEntry', createHistoryEntry, wrapAction a
+      forwardGetState: (realGetState) -> () -> unwrapState realGetState()
+    )(actionCreatorResult)
 
   handlePath: (path, createHistoryEntry = true) ->
     if path is '' # initial load
