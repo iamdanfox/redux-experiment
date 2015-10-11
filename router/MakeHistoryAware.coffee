@@ -2,11 +2,8 @@
 NestThunkCreator = require '../nest/NestThunkCreator'
 HistoryEntryPrefixer = require('../nest/MakePrefixer')('History-')
 NoHistoryPrefixer = require('../nest/MakePrefixer')('NoHistory-')
+{ wrapState, unwrapState, wrapAction, unwrapAction } = require '../nest/Wrappers'
 
-wrapState = (innerBBA) -> {innerBBA}
-unwrapState = ({innerBBA}) -> innerBBA
-wrapAction = (prefix) -> (action) -> Object.assign {}, action, {type: prefix action.type}
-unwrapAction = (unprefix, action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 
 actionCreators =
   historyEntry: NestThunkCreator {unwrapState, wrapAction: wrapAction(HistoryEntryPrefixer.prefix)}
@@ -27,9 +24,9 @@ makeHistoryAware = (innerReducer) ->
     return wrapState innerReducer unwrapState(state), unwrappedAction
 
   reducer = (state = initialState, action) ->
-    if a = unwrapAction HistoryEntryPrefixer.unprefix, action
+    if a = unwrapAction(HistoryEntryPrefixer.unprefix) action
       return Object.assign {}, reduceInnerState(state, a), {fromBackButton: false}
-    else if a = unwrapAction NoHistoryPrefixer.unprefix, action
+    else if a = unwrapAction(NoHistoryPrefixer.unprefix) action
       return Object.assign {}, reduceInnerState(state, a), {fromBackButton: true}
     else
       return state

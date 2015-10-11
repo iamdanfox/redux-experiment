@@ -1,11 +1,6 @@
 NestThunkCreator = require '../nest/NestThunkCreator'
 DefaultPrefixer = require('../nest/MakePrefixer')('PA-')
-
-
-wrapState = (inner) -> {inner}
-unwrapState = ({inner}) -> inner
-wrapAction = (prefix) -> (action) -> Object.assign {}, action, {type: prefix action.type}
-unwrapAction = (unprefix) -> (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
+{ wrapState, unwrapState, wrapAction, unwrapAction } = require '../nest/Wrappers'
 
 
 makePathAugmenter = ({prefix, unprefix, nestActionCreator}) ->
