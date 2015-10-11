@@ -1,6 +1,6 @@
 RoutableCounter = require './RoutableCounter'
 Counter = require './Counter'
-Prefixer = require './Prefixer'
+Prefixer = require '../nest/MakePrefixer'
 ThunkForwarder = require './ThunkForwarder'
 
 sides = {'left', 'right'}

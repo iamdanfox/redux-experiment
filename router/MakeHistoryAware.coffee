@@ -1,7 +1,7 @@
 { compose } = require 'redux'
 ThunkForwarder = require '../redux/ThunkForwarder'
-HistoryEntryPrefixer = require('../redux/Prefixer')('History-')
-NoHistoryPrefixer = require('../redux/Prefixer')('NoHistory-')
+HistoryEntryPrefixer = require('../nest/MakePrefixer')('History-')
+NoHistoryPrefixer = require('../nest/MakePrefixer')('NoHistory-')
 
 wrapState = (innerBBA) -> {innerBBA}
 unwrapState = ({innerBBA}) -> innerBBA
