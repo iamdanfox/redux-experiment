@@ -10,7 +10,7 @@ unwrapState = ({inner}) -> inner
 actionCreators =
   forwardAction: (actionCreatorResult) ->
     ThunkForwarder(
-      forwardPlain: wrapAction
+      wrapAction: wrapAction
       forwardGetState: unwrapState
     )(actionCreatorResult)
 

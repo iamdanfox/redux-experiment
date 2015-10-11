@@ -1,12 +1,12 @@
 { compose } = require 'redux'
 
 
-thunkForwarder = ({forwardPlain, forwardGetState}) ->
+thunkForwarder = ({wrapAction, forwardGetState}) ->
   (actionCreatorResult) ->
     if typeof actionCreatorResult is 'function' # ie, redux-thunk
-      return (dispatch, getState) -> actionCreatorResult ((a) -> dispatch forwardPlain a), compose(forwardGetState, getState)
+      return (dispatch, getState) -> actionCreatorResult ((a) -> dispatch wrapAction a), compose(forwardGetState, getState)
     else
-      return forwardPlain actionCreatorResult
+      return wrapAction actionCreatorResult
 
 # slimmedDownThunkForwarder = ({wrapAction, unwrapState}) ->
 #   (a) ->
