@@ -9,10 +9,6 @@ actionCreators =
   historyEntry: NestThunkCreator {unwrapState, wrapAction: wrapAction(HistoryEntryPrefixer.prefix)}
   noHistoryEntry: NestThunkCreator {unwrapState, wrapAction: wrapAction(NoHistoryPrefixer.prefix)}
 
-reactUtils =
-  stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
-  dispatchToProps: (dispatch) -> {dispatch: compose dispatch, actionCreators.historyEntry}
-
 makeHistoryAware = (innerReducer) ->
   throw "HistoryAware must be called with a reducer argument" unless typeof innerReducer is 'function'
 
@@ -34,7 +30,7 @@ makeHistoryAware = (innerReducer) ->
   return {actionCreators, reducer, unwrapState}
 
 
-module.exports = { makeHistoryAware, reactUtils }
+module.exports = { makeHistoryAware, actionCreators, unwrapState }
 
 
 

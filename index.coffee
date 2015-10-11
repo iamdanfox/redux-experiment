@@ -1,5 +1,6 @@
 # augment reducer
-{ makeHistoryAware, reactUtils } = require './router/HistoryAugmenter'
+HistoryAugmenter = require './router/HistoryAugmenter'
+{ makeHistoryAware } = HistoryAugmenter
 Routable = require './redux/RoutableTwoRoutableCounters'
 { reducer, actionCreators, unwrapState } = makeHistoryAware Routable.reducer
 
@@ -9,21 +10,17 @@ thunk = require 'redux-thunk'
 logger = require 'redux-logger'
 store = applyMiddleware(thunk, logger {collapsed: true})(createStore) reducer
 
-# hide some routing related stuff from react
-reduxNestComponent = require './nest/ReduxNestComponent'
-RoutableHistoryAwareComponent = reduxNestComponent
-  inner: require './ui/TwoRoutableCounters'
-  unwrapState: Routable.unwrapState
-  wrap: Routable.actionCreators.wrap
+RoutableTwoRoutableCounters = require './ui/RoutableTwoRoutableCounters'
 
 # wire up to react
 { Provider, connect } = require 'react-redux'
-ConnectedRoutableHistoryAwareComponent = connect(reactUtils.stateToProps, reactUtils.dispatchToProps) RoutableHistoryAwareComponent
+
+stateToProps = (state) -> {reduxState: HistoryAugmenter.unwrapState state}
+dispatchToProps = (dispatch) -> {dispatch: compose dispatch, HistoryAugmenter.actionCreators.historyEntry}
+Connected = connect(stateToProps, dispatchToProps) RoutableTwoRoutableCounters
 React = require 'react'
 React.render (
-  <Provider store={store}>
-    {() -> <ConnectedRoutableHistoryAwareComponent />}
-  </Provider>
+  <Provider store={store}>{() -> <Connected />}</Provider>
 ), document.getElementById 'root'
 
 # start router
