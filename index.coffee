@@ -31,6 +31,6 @@ React.render (
 startRouter
   store: store
   handlePopStatePath: compose(actionCreators.noHistoryEntry, Routable.actionCreators.handlePath)
-  pathFromReduxState: (state) -> unwrapState(state).url
+  pathFromReduxState: (state) -> unwrapState(state).path
   pathChanged: (state) -> unwrapState(state).pathChanged
   fromBackButton: (state) -> state.fromBackButton
