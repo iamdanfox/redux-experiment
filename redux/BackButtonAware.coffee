@@ -2,39 +2,14 @@
 ThunkForwarder = require './ThunkForwarder'
 HistoryEntryPrefixer = require('./Prefixer')('history$')
 NoHistoryPrefixer = require('./Prefixer')('nohistory$')
-prefixExtensionKey = require('./Prefixer')('historyAware$').prefix
-
-
-extendAction = (extension) -> (action) ->
-  prefixedExtension = {}
-  for key,val of extension
-    prefixedExtension[prefixExtensionKey key] = val
-  return Object.assign {}, action, prefixedExtension
-unextendAction = (extensionKeyObject, originalAction) ->
-  action = Object.assign {}, originalAction
-  extension = {}
-  for key,val of extensionKeyObject
-    extension[key] = action[prefixExtensionKey key]
-  delete action[prefixExtensionKey key]
-  return {action, extension}
 
 wrapState = (inner) -> {inner}
 unwrapState = ({inner}) -> inner
+wrapAction = (prefix) -> (action) -> Object.assign {}, action, {type: prefix action.type}
 
 actionCreators =
-  historyEntry:  (actionCreatorResult) ->
-    wrapAction = (action) -> Object.assign {}, action, {type: HistoryEntryPrefixer.prefix action.type}
-    ThunkForwarder(
-      wrapAction: compose extendAction({fromBackButton: false}), wrapAction
-      unwrapState: unwrapState
-    )(actionCreatorResult)
-
-  noHistoryEntry:  (actionCreatorResult) ->
-    wrapAction = (action) -> Object.assign {}, action, {type: NoHistoryPrefixer.prefix action.type}
-    ThunkForwarder(
-      wrapAction: compose extendAction({fromBackButton: true}), wrapAction
-      unwrapState: unwrapState
-    )(actionCreatorResult)
+  historyEntry: ThunkForwarder {unwrapState, wrapAction: wrapAction(HistoryEntryPrefixer.prefix)}
+  noHistoryEntry: ThunkForwarder {unwrapState, wrapAction: wrapAction(NoHistoryPrefixer.prefix)}
 
 reactUtils =
   stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
