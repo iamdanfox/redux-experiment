@@ -1,17 +1,19 @@
-{ createStore, applyMiddleware } = require('redux')
+{ createStore, applyMiddleware } = require 'redux'
+thunk = require 'redux-thunk'
 logger = require 'redux-logger'
-thunk = require('redux-thunk')
-{ reducer, actionCreators } = require './redux/RoutableTwoRoutableCounters'
-UI = require './ui/RoutableTwoRoutableCounters'
+{ reducer, actionCreators, unwrapState } = require './redux/RoutableTwoRoutableCounters'
+UI = require './ui/TwoRoutableCounters'
+ReduxNest = require './ui/ReduxNest'
 React = require 'react'
-{ Provider, connect } = require('react-redux')
+{ Provider, connect } = require 'react-redux'
 Router = require './redux/Router'
 
 store = applyMiddleware(thunk, logger {collapsed: true})(createStore) reducer
 
 stateToProps = (reduxState) -> {reduxState}
 dispatchToProps = (dispatch) -> {dispatch}
-ConnectedUI = connect(stateToProps, dispatchToProps) UI
+RoutableComponent = ReduxNest UI, unwrapState, actionCreators.forwardAction
+ConnectedUI = connect(stateToProps, dispatchToProps) RoutableComponent
 
 React.render (
   <Provider store={store}>

@@ -1,8 +1,8 @@
 React = require 'react'
 
-MakeRoutableComponent = (Inner, unwrapState, forwardAction) ->
-  RoutableWrapper = React.createClass
-    displayName: 'RoutableWrapper'
+ReduxNest = (Inner, unwrapState, forwardAction) ->
+  return React.createClass
+    displayName: 'ReduxNest'
 
     propTypes:
       reduxState: React.PropTypes.object.isRequired
@@ -16,4 +16,4 @@ MakeRoutableComponent = (Inner, unwrapState, forwardAction) ->
       <Inner {...props} />
 
 
-module.exports = MakeRoutableComponent
+module.exports = ReduxNest

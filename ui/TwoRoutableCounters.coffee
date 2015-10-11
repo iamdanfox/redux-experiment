@@ -3,9 +3,9 @@ React = require 'react'
 { left, right } = require('../redux/TwoRoutableCounters').actionCreators
 
 Counter = require './Counter'
-MakeRoutableComponent = require './MakeRoutableComponent'
+ReduxNest = require './ReduxNest'
 RoutableCounter = require '../redux/RoutableCounter'
-RoutableCounterComponent = MakeRoutableComponent Counter, RoutableCounter.unwrapState, RoutableCounter.actionCreators.forwardAction
+RoutableCounterComponent = ReduxNest Counter, RoutableCounter.unwrapState, RoutableCounter.actionCreators.forwardAction
 
 
 TwoRoutableCounters = React.createClass
