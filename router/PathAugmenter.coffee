@@ -1,4 +1,4 @@
-ThunkForwarder = require '../redux/ThunkForwarder'
+NestThunkCreator = require '../nest/NestThunkCreator'
 DefaultPrefixer = require('../nest/MakePrefixer')('PA-')
 
 
@@ -13,7 +13,7 @@ pathAugmenterFromPrefixer = ({prefix, unprefix}) ->
     unwrapState: unwrapState
 
     makeActionCreators: ({handlePath}) ->
-      wrap: ThunkForwarder {unwrapState, wrapAction: wrapAction prefix}
+      wrap: NestThunkCreator {unwrapState, wrapAction: wrapAction prefix}
       handlePath: handlePath
 
     extendReducer: (innerReducer, keyToMapperObject) ->

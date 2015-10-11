@@ -1,7 +1,7 @@
 RoutableCounter = require './RoutableCounter'
 Counter = require './Counter'
 Prefixer = require '../nest/MakePrefixer'
-ThunkForwarder = require './ThunkForwarder'
+NestThunkCreator = require '../nest/NestThunkCreator'
 
 sides = {'left', 'right'}
 
@@ -18,11 +18,11 @@ wrapState = (side, innerState) ->
 unwrapState = (side) -> (state) -> state[side]
 
 actionCreators =
-  left: ThunkForwarder
+  left: NestThunkCreator
     wrapAction: wrapAction sides.left
     unwrapState: unwrapState sides.left
 
-  right: ThunkForwarder
+  right: NestThunkCreator
     wrapAction: wrapAction sides.right
     unwrapState: unwrapState sides.right
 

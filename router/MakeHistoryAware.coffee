@@ -1,5 +1,5 @@
 { compose } = require 'redux'
-ThunkForwarder = require '../redux/ThunkForwarder'
+NestThunkCreator = require '../nest/NestThunkCreator'
 HistoryEntryPrefixer = require('../nest/MakePrefixer')('History-')
 NoHistoryPrefixer = require('../nest/MakePrefixer')('NoHistory-')
 
@@ -9,8 +9,8 @@ wrapAction = (prefix) -> (action) -> Object.assign {}, action, {type: prefix act
 unwrapAction = (unprefix, action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
 
 actionCreators =
-  historyEntry: ThunkForwarder {unwrapState, wrapAction: wrapAction(HistoryEntryPrefixer.prefix)}
-  noHistoryEntry: ThunkForwarder {unwrapState, wrapAction: wrapAction(NoHistoryPrefixer.prefix)}
+  historyEntry: NestThunkCreator {unwrapState, wrapAction: wrapAction(HistoryEntryPrefixer.prefix)}
+  noHistoryEntry: NestThunkCreator {unwrapState, wrapAction: wrapAction(NoHistoryPrefixer.prefix)}
 
 reactUtils =
   stateToProps: (reduxState) -> {reduxState: unwrapState reduxState}
