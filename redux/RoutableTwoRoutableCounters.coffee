@@ -1,25 +1,17 @@
 TwoRoutableCounters = require './TwoRoutableCounters'
 RoutableCounter = require './RoutableCounter'
-ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('R2$')
+{wrapAction, wrapState, unwrapState, makeActionCreators, makeReducer} = require('./RouterUtils')({prefix, unprefix})
 
-wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
-unwrapAction = (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
-wrapState = (inner) -> {inner}
-unwrapState = ({inner}) -> inner
-
-actionCreators =
-  wrap: ThunkForwarder({wrapAction, unwrapState})
-
-  handlePath: (path) ->
-    {wrap} = actionCreators
-    {left, right} = TwoRoutableCounters.actionCreators
-    {handlePath} = RoutableCounter.actionCreators
-    return (dispatch, getState) ->
-      [leftPath, rightPath] = path.split /\//
-      dispatch wrap left handlePath leftPath
-      dispatch wrap right handlePath rightPath
-      return
+actionCreators = makeActionCreators (path) ->
+  {wrap} = actionCreators
+  {left, right} = TwoRoutableCounters.actionCreators
+  {handlePath} = RoutableCounter.actionCreators
+  return (dispatch, getState) ->
+    [leftPath, rightPath] = path.split /\//
+    dispatch wrap left handlePath leftPath
+    dispatch wrap right handlePath rightPath
+    return
 
 pathFromState = (innerState) ->
   l = TwoRoutableCounters.unwrapState TwoRoutableCounters.sides.left, innerState
@@ -30,11 +22,7 @@ initialState = do ->
   innerInitialState = TwoRoutableCounters.reducer undefined, {}
   return Object.assign {}, wrapState(innerInitialState), {url: pathFromState innerInitialState}
 
-reducer = (state = initialState, action) ->
-  innerState = TwoRoutableCounters.reducer unwrapState(state), unwrapAction(action) or {}
-  newUrl = pathFromState innerState
-  pathChanged = newUrl isnt state.url
-  return Object.assign wrapState(innerState), {url: newUrl, pathChanged}
+reducer = makeReducer(initialState, TwoRoutableCounters.reducer, pathFromState)
 
 module.exports = {actionCreators, reducer, unwrapState}
 
