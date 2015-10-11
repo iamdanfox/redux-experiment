@@ -1,7 +1,12 @@
 React = require 'react'
-RoutableCounter = require './RoutableCounter'
 { unwrapState, sides } = require '../redux/TwoRoutableCounters'
 { left, right } = require('../redux/TwoRoutableCounters').actionCreators
+
+Counter = require './Counter'
+MakeRoutableComponent = require './MakeRoutableComponent'
+RoutableCounter = require '../redux/RoutableCounter'
+RoutableCounterComponent = MakeRoutableComponent Counter, RoutableCounter.unwrapState, RoutableCounter.actionCreators.forwardAction
+
 
 TwoRoutableCounters = React.createClass
   displayName: 'TwoRoutableCounters'
@@ -21,8 +26,8 @@ TwoRoutableCounters = React.createClass
 
     <div>
       <h1>Two Routable Counters</h1>
-      <RoutableCounter {...leftProps} />
-      <RoutableCounter {...rightProps} />
+      <RoutableCounterComponent {...leftProps} />
+      <RoutableCounterComponent {...rightProps} />
     </div>
 
 
