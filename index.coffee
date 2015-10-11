@@ -9,24 +9,24 @@ store = createStoreWithMiddleware RoutableTwoRoutableCounters.reducer
 
 # ROUTING STUFF =========================================
 
-# dropFirstSlash = (path) -> path.substr 1
-# addFirstSlash = (path) -> '/' + path
-#
-# unsubscribe = store.subscribe () ->
-#   { url, createHistoryEntry } = store.getState()
-#   if not createHistoryEntry
-#     return
-#
-#   window.history.pushState null, null, addFirstSlash(url)
-#
-# # do initial page load.
-# path = dropFirstSlash window.location.pathname
-# store.dispatch RoutableTwoRoutableCounters.actionCreators.handlePath path
-#
-# window.onpopstate = (e) ->
-#   # back button shouldn't insert a new history entry.
-#   path = dropFirstSlash window.location.pathname
-#   store.dispatch RoutableTwoRoutableCounters.actionCreators.backToPath path
+dropFirstSlash = (path) -> path.substr 1
+addFirstSlash = (path) -> '/' + path
+
+unsubscribe = store.subscribe () ->
+  { url, createHistoryEntry } = store.getState()
+  if not createHistoryEntry
+    return
+
+  window.history.pushState null, null, addFirstSlash(url)
+
+# do initial page load.
+path = dropFirstSlash window.location.pathname
+store.dispatch RoutableTwoRoutableCounters.actionCreators.handlePath path
+
+window.onpopstate = (e) ->
+  # back button shouldn't insert a new history entry.
+  path = dropFirstSlash window.location.pathname
+  store.dispatch RoutableTwoRoutableCounters.actionCreators.backToPath path
 
 
 mapStateToProps = (reduxState) -> {reduxState}

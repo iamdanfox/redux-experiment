@@ -37,10 +37,12 @@ actionCreators =
     )(actionCreatorResult)
 
   handlePath: (path, createHistoryEntry = true) ->
-    (dispatch, getState) ->
+    {left, right} = TwoRoutableCounters.actionCreators
+    {handlePath} = RoutableCounter.actionCreators
+    return (dispatch, getState) ->
       [leftPath, rightPath] = path.split /\//
-      dispatch actionCreators.forwardAction TwoRoutableCounters.actionCreators.left(RoutableCounter.actionCreators.handlePath leftPath), createHistoryEntry
-      dispatch actionCreators.forwardAction TwoRoutableCounters.actionCreators.right(RoutableCounter.actionCreators.handlePath rightPath), createHistoryEntry
+      dispatch actionCreators.forwardAction left(handlePath leftPath), createHistoryEntry
+      dispatch actionCreators.forwardAction right(handlePath rightPath), createHistoryEntry
       return
 
   backToPath: (path) ->
@@ -53,7 +55,10 @@ lrRoutables = (innerState) ->
   return {leftRoutable, rightRoutable}
 
 pathFromRoutables = ({leftRoutable, rightRoutable}) -> "#{leftRoutable.url}/#{rightRoutable.url}"
-createHistoryEntryFromRoutables = ({leftRoutable, rightRoutable}) -> leftRoutable.createHistoryEntry or rightRoutable.createHistoryEntry
+createHistoryEntryFromRoutables = ({leftRoutable, rightRoutable}) ->
+  return false if leftRoutable.createHistoryEntry is false
+  return false if rightRoutable.createHistoryEntry is false
+  return true
 
 initialState = do ->
   innerInitialState = TwoRoutableCounters.reducer undefined, {}
@@ -72,8 +77,8 @@ reducer = (state = initialState, action) ->
   # console.log action.type, 'isnt', newUrl, state.url
   createHistoryEntry = newUrl isnt state.url
   # console.log action.type, newUrl, routables, createHistoryEntryFromRoutables routables
-  # if createHistoryEntryFromRoutables(routables) is false # actions can prevent history entries
-  #   createHistoryEntry = false
+  if createHistoryEntryFromRoutables(routables) is false # actions can prevent history entries
+    createHistoryEntry = false
   return Object.assign wrapState(innerState), {url: newUrl, createHistoryEntry}
 
 
