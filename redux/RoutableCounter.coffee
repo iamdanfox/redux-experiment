@@ -1,15 +1,8 @@
 Counter = require './Counter'
-ThunkForwarder = require './ThunkForwarder'
 { prefix, unprefix } = require('./Prefixer')('R1$')
+{ wrapAction, wrapState, unwrapState, makeActionCreators, makeReducer } = require('./RouterUtils')({prefix, unprefix})
 
-wrapAction = (action) -> Object.assign {}, action, {type: prefix action.type}
-unwrapAction = (action) -> if (type = unprefix action.type)? then Object.assign {}, action, {type} else null
-wrapState = (inner) -> {inner}
-unwrapState = ({inner}) -> inner
-
-actionCreators =
-  wrap: ThunkForwarder({wrapAction, unwrapState})
-
+actionCreators = makeActionCreators
   handlePath: (path) ->
     if path is '' # initial load
       initial = Counter.reducer undefined, {}
@@ -19,15 +12,9 @@ actionCreators =
     if isNaN(number) then number = Counter.reducer undefined, {}
     return actionCreators.wrap Counter.actionCreators.set(number)
 
+pathFromState = (state) -> state.toString()
 
-initialState = Object.assign wrapState(Counter.reducer undefined, {}), {url: undefined, fromBackButton: false, pathChanged: false}
-
-reducer = (state = initialState, action) ->
-  innerState = Counter.reducer unwrapState(state), unwrapAction(action) or {}
-  newUrl = innerState.toString()
-  pathChanged = newUrl isnt state.url
-  return Object.assign wrapState(innerState), {url: newUrl, pathChanged}
-
+reducer = makeReducer Counter.reducer, pathFromState
 
 module.exports = {actionCreators, reducer, unwrapState}
 
@@ -40,7 +27,7 @@ module.exports = {actionCreators, reducer, unwrapState}
 store = createStore reducer
 console.assert unwrapState(store.getState()) is 0, 'initial state'
 console.assert store.getState().url is '0', 'initial url '
-console.assert store.getState().pathChanged is true, 'path did change initially'
+console.assert store.getState().pathChanged is false, 'path shouldnt change initially (dont want to add more history entries)'
 
 store.dispatch actionCreators.handlePath 'broken'
 console.assert store.getState().url is '0', 'broken url redirected to initial'

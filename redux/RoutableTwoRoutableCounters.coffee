@@ -3,26 +3,23 @@ RoutableCounter = require './RoutableCounter'
 { prefix, unprefix } = require('./Prefixer')('R2$')
 {wrapAction, wrapState, unwrapState, makeActionCreators, makeReducer} = require('./RouterUtils')({prefix, unprefix})
 
-actionCreators = makeActionCreators (path) ->
-  {wrap} = actionCreators
-  {left, right} = TwoRoutableCounters.actionCreators
-  {handlePath} = RoutableCounter.actionCreators
-  return (dispatch, getState) ->
-    [leftPath, rightPath] = path.split /\//
-    dispatch wrap left handlePath leftPath
-    dispatch wrap right handlePath rightPath
-    return
+actionCreators = makeActionCreators
+  handlePath: (path) ->
+    {wrap} = actionCreators
+    {left, right} = TwoRoutableCounters.actionCreators
+    {handlePath} = RoutableCounter.actionCreators
+    return (dispatch, getState) ->
+      [leftPath, rightPath] = path.split /\//
+      dispatch wrap left handlePath leftPath
+      dispatch wrap right handlePath rightPath
+      return
 
 pathFromState = (innerState) ->
   l = TwoRoutableCounters.unwrapState TwoRoutableCounters.sides.left, innerState
   r = TwoRoutableCounters.unwrapState TwoRoutableCounters.sides.right, innerState
   return "#{l.url}/#{r.url}"
 
-initialState = do ->
-  innerInitialState = TwoRoutableCounters.reducer undefined, {}
-  return Object.assign {}, wrapState(innerInitialState), {url: pathFromState innerInitialState}
-
-reducer = makeReducer(initialState, TwoRoutableCounters.reducer, pathFromState)
+reducer = makeReducer(TwoRoutableCounters.reducer, pathFromState)
 
 module.exports = {actionCreators, reducer, unwrapState}
 
