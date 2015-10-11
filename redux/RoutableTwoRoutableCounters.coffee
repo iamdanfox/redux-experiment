@@ -27,7 +27,7 @@ module.exports = {actionCreators, reducer, unwrapState: pathAugmenter.unwrapStat
 
 
 # cheeky little unit tests
-{ makeHistoryAware } = require '../router/MakeHistoryAware'
+{ makeHistoryAware } = require '../router/HistoryAugmenter'
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
 # logger = require 'redux-logger'

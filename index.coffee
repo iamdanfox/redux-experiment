@@ -1,5 +1,5 @@
 # augment reducer
-{ makeHistoryAware, reactUtils } = require './router/MakeHistoryAware'
+{ makeHistoryAware, reactUtils } = require './router/HistoryAugmenter'
 Routable = require './redux/RoutableTwoRoutableCounters'
 { reducer, actionCreators, unwrapState } = makeHistoryAware Routable.reducer
 
