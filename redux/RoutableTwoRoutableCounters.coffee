@@ -24,8 +24,6 @@ unwrapAction = (action) ->
 wrapState = (inner) -> {inner}
 unwrapState = ({inner}) -> inner
 
-
-
 actionCreators =
   forwardAction: (actionCreatorResult, fromBackButton = false) ->
     ThunkForwarder(
@@ -74,6 +72,9 @@ reducer = (state = initialState, action) ->
 
 module.exports = {actionCreators, reducer, unwrapState}
 
+
+
+
 # cheeky little unit tests
 { createStore, applyMiddleware } = require 'redux'
 thunk = require 'redux-thunk'
@@ -83,7 +84,6 @@ store = createStoreWithMiddleware reducer
 
 console.assert store.getState().url is '0/0', 'initial path'
 console.assert store.getState().fromBackButton is false, 'no history entries initially!'
-
 
 store.dispatch actionCreators.handlePath 'broken'
 console.log store.getState()
@@ -109,15 +109,3 @@ console.assert store.getState().fromBackButton, 'even though two actions were tr
 store.dispatch actionCreators.forwardAction left require('./RoutableCounter').actionCreators.forwardAction increment()
 console.assert unwrapState(store.getState()).left.inner is 2, 'left should have updated'
 console.assert store.getState().fromBackButton is false, 'a movement forwards'
-
-# console.assert unwrapState(store.getState()) is 1, 'state has changed after handlePath'
-# console.assert store.getState().url is '1', 'url has changed'
-# console.assert store.getState().fromBackButton is true, 'should create history entries by default'
-#
-#
-# console.assert unwrapState(store.getState()) is 0, 'state has changed after backToPath'
-# console.assert store.getState().url is '0', 'url has changed'
-#
-# store.dispatch {type:'UNKNOWN'}
-#
-# console.assert store.getState().fromBackButton is false, 'unchanged url shouldnt create history'
